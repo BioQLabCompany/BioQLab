@@ -171,10 +171,20 @@
         .nav-subtitle .nav-subtitle-main {
             display: block;
             font-size: 0.95rem;
-            font-weight: 600;
+            font-weight: 700;
             letter-spacing: 0.5px;
-            color: var(--text-color);
             margin: 0 0 3px;
+            background: linear-gradient(90deg, var(--text-color) 30%, #C58FE0 55%, #8FD46B 75%, var(--text-color) 100%);
+            background-size: 220% auto;
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: subtitleShine 6s ease-in-out infinite;
+        }
+
+        @keyframes subtitleShine {
+            0%, 100% { background-position: 0% center; }
+            50% { background-position: 100% center; }
         }
 
         .nav-subtitle .nav-subtitle-hint {
@@ -200,30 +210,157 @@
         .tema-item.active { background-color: var(--accent-color); color: white; }
 
         /* --- Navegador ADN --- */
-        #helix-wrap { width: 100%; }
+        #helix-wrap {
+            width: 100%;
+            position: relative;
+            border-radius: 18px;
+            padding: 6px 0 2px;
+        }
 
-        #helix-svg { width: 100%; height: auto; display: block; }
+        /* Halo suave detrás de toda la hélice, para dar profundidad */
+        #helix-wrap::before {
+            content: "";
+            position: absolute;
+            inset: -10px;
+            background: radial-gradient(60% 55% at 50% 45%, rgba(232,199,126,0.16), transparent 70%);
+            pointer-events: none;
+            z-index: 0;
+        }
 
-        .backbone { fill: none; stroke: #E8C77E; stroke-width: 18; stroke-linecap: round; }
+        #helix-svg { width: 100%; height: auto; display: block; position: relative; z-index: 1; }
+
+        .backbone {
+            fill: none;
+            stroke: url(#backboneGradient);
+            stroke-width: 18;
+            stroke-linecap: round;
+            filter: drop-shadow(0 0 6px rgba(232,199,126,0.55));
+        }
         .backbone-edge { fill: none; stroke: rgba(0,0,0,0.15); stroke-width: 18; stroke-linecap: round; }
 
-        .base-shape { cursor: pointer; }
-        .base-shape line { transition: stroke-width 0.18s ease, opacity 0.18s ease; }
-        .base-shape:hover line { opacity: 0.72; }
-        .base-shape.active line { stroke-width: 20 !important; }
-        .base-shape.active circle.node-dot { stroke: var(--accent-color); stroke-width: 2; }
+        /* Trazo de "energía" que recorre el esqueleto en bucle, efecto de brillo animado */
+        .backbone-shimmer {
+            fill: none;
+            stroke: url(#shimmerGradient);
+            stroke-width: 6;
+            stroke-linecap: round;
+            opacity: 0.85;
+            mix-blend-mode: screen;
+            stroke-dasharray: 46 340;
+            animation: shimmerFlow 5.5s linear infinite;
+        }
+        .backbone-shimmer.reverse { animation-direction: reverse; animation-duration: 6.5s; opacity: 0.6; }
 
+        @keyframes shimmerFlow {
+            from { stroke-dashoffset: 0; }
+            to { stroke-dashoffset: -772; }
+        }
+
+        .base-shape { cursor: pointer; }
+        .base-shape line {
+            transition: stroke-width 0.22s ease, opacity 0.22s ease, filter 0.22s ease;
+            filter: drop-shadow(0 0 0 transparent);
+        }
+        .base-shape:hover line {
+            opacity: 0.9;
+            filter: drop-shadow(0 0 7px var(--glow-color, currentColor));
+        }
+        .base-shape.active line {
+            stroke-width: 20 !important;
+            filter: drop-shadow(0 0 10px var(--glow-color, currentColor))
+                    drop-shadow(0 0 20px var(--glow-color, currentColor));
+        }
+        .base-shape circle.node-dot {
+            stroke: rgba(255,255,255,0.9);
+            stroke-width: 1.5;
+            transform-box: fill-box;
+            transform-origin: center;
+            transition: transform 0.2s ease, filter 0.2s ease, stroke-width 0.2s ease;
+        }
+        .base-shape:hover circle.node-dot {
+            filter: drop-shadow(0 0 7px var(--glow-color, currentColor));
+            transform: scale(1.12);
+        }
+        .base-shape.active circle.node-dot {
+            stroke: #fff;
+            stroke-width: 2.5;
+            animation: dotPulse 1.6s ease-in-out infinite;
+        }
+        .base-letter {
+            pointer-events: none;
+            user-select: none;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            font-size: 7px;
+            font-weight: 800;
+            fill: #fff;
+            text-anchor: middle;
+            dominant-baseline: central;
+            paint-order: stroke;
+            stroke: rgba(0,0,0,0.28);
+            stroke-width: 1.5px;
+        }
+
+        @keyframes dotPulse {
+            0%, 100% { transform: scale(1); filter: drop-shadow(0 0 4px var(--glow-color, #E8C77E)); }
+            50% { transform: scale(1.3); filter: drop-shadow(0 0 10px var(--glow-color, #E8C77E)); }
+        }
+
+        /* Leyenda de bases: más clara y moderna */
         .legend-mini {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 7px;
             margin-top: 18px;
             padding-top: 16px;
             border-top: 1px solid var(--border-soft);
-            font-size: 0.72rem;
+            font-size: 0.68rem;
         }
-        .legend-mini span { display: flex; align-items: center; gap: 8px; }
-        .legend-mini i { width: 20px; height: 10px; border-radius: 3px; display: inline-block; flex-shrink: 0; }
+        .legend-mini .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            min-width: 0;
+            padding: 6px 7px;
+            border: 1px solid var(--border-softer);
+            border-radius: 10px;
+            background: linear-gradient(135deg, var(--card-bg), var(--panel-bg));
+            transition: background-color 0.2s ease, transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+        .legend-mini .legend-item:hover {
+            background: var(--hover-bg);
+            transform: translateY(-1px);
+            border-color: var(--swatch-glow, var(--border-soft));
+            box-shadow: 0 5px 14px rgba(0,0,0,0.10), 0 0 12px -5px var(--swatch-glow);
+        }
+        .legend-mini i {
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            box-shadow: 0 0 9px 1px var(--swatch-glow, transparent);
+            border: 1px solid rgba(255,255,255,0.7);
+            transition: box-shadow 0.2s ease, transform 0.2s ease;
+        }
+        .legend-mini i b {
+            color: #fff;
+            font-size: 0.7rem;
+            font-weight: 800;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+        }
+        .legend-mini .legend-item:hover i {
+            transform: scale(1.08);
+            box-shadow: 0 0 14px 2px var(--swatch-glow, transparent);
+        }
+        .legend-name {
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            font-weight: 650;
+        }
 
         /* Main Area */
         main {
@@ -391,8 +528,26 @@
         .slide-link-btn svg { width: 16px; height: 16px; flex-shrink: 0; }
 
         #theme-preview {
-            position: relative;
-            z-index: 1000000;
+            position: fixed !important;
+            top: 50% !important;
+            left: 50% !important;
+            transform: translate(-50%, -50%);
+            z-index: 1000001 !important;
+            box-sizing: border-box;
+            max-height: min(82vh, 620px);
+            overflow-y: auto;
+            overscroll-behavior: contain;
+            isolation: isolate;
+        }
+
+        /* Al seleccionar un tema, el contenido del fondo no puede desplazarse. */
+        body.tema-bloqueado #sidebar,
+        body.tema-bloqueado main {
+            overflow: hidden !important;
+        }
+        body.tema-bloqueado {
+            overflow: hidden !important;
+            touch-action: none;
         }
 
         #dim-overlay {
@@ -499,10 +654,19 @@
             z-index: 1000001;
             pointer-events: none;
             opacity: 0;
-            transition: opacity 0.2s ease;
+            filter: blur(0.5px);
+            transition: opacity 0.25s ease;
         }
 
-        #theme-glow.visible { opacity: 1; }
+        #theme-glow.visible {
+            opacity: 1;
+            animation: glowPulse 1.8s ease-in-out infinite;
+        }
+
+        @keyframes glowPulse {
+            0%, 100% { filter: blur(0.5px) brightness(1); }
+            50% { filter: blur(1.5px) brightness(1.25); }
+        }
 
         #theme-tooltip {
             position: fixed;
@@ -703,19 +867,15 @@
             }
 
             .legend-mini {
-                flex-direction: row;
-                flex-wrap: wrap;
-                justify-content: center;
-                gap: 4px 9px;
-                font-size: 0.58rem;
+                grid-template-columns: 1fr 1fr;
+                gap: 4px;
+                font-size: 0.56rem;
                 margin-top: 5px;
                 padding-top: 6px;
             }
-
-            .legend-mini i {
-                width: 15px;
-                height: 7px;
-            }
+            .legend-mini .legend-item { padding: 4px 5px; gap: 5px; border-radius: 8px; }
+            .legend-mini i { width: 19px; height: 19px; }
+            .legend-mini i b { font-size: 0.58rem; }
 
             main {
                 width: 100%;
@@ -738,6 +898,10 @@
 
             #theme-preview {
                 max-height: 82dvh;
+                top: 50% !important;
+                left: 50% !important;
+                transform: translate(-50%, -50%);
+                overflow-y: auto;
             }
 
             .quiz-card {
@@ -886,9 +1050,11 @@
             }
 
             .legend-mini {
-                font-size: 0.52rem;
-                gap: 3px 7px;
+                font-size: 0.5rem;
+                gap: 3px;
             }
+            .legend-mini .legend-item { padding: 3px 4px; }
+            .legend-mini i { width: 17px; height: 17px; }
 
             main {
                 padding: 9px;
@@ -1259,7 +1425,7 @@
         <img class="brand-logo" src="data:image/png;base64,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" alt="Logo BioQlab (bacteriófago)">
-        <h2>BioQlab <span class="brand-version">V0.0.2</span></h2>
+        <h2>BioQlab <span class="brand-version">V0.0.1</span></h2>
     </div>
     <p class="nav-subtitle">
         <span class="nav-subtitle-main">Selecciona el tema</span>
@@ -1268,12 +1434,12 @@ nBR2FW+6OyjoWocQJMVcmJrsv1rQcdLqAeLOX0Pe10oT6xwsGwEMfgVE7cw58WkSfKUo025TCIB3Yfeb
     <div id="helix-wrap">
         <svg id="helix-svg" viewBox="0 0 260 900" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg"></svg>
     </div>
-    <div class="legend-mini">
-        <span><i style="background:#8FD46B"></i>Adenina</span>
-        <span><i style="background:#C58FE0"></i>Timina</span>
-        <span><i style="background:#F3768A"></i>Citosina</span>
-        <span><i style="background:#6C7FD8"></i>Guanina</span>
-        <span><i style="background:#E8C77E"></i>Esqueleto azúcar-fosfato</span>
+    <div class="legend-mini" aria-label="Leyenda de bases nitrogenadas">
+        <span class="legend-item" style="--swatch-glow:#8FD46B"><i style="background:#8FD46B"><b>A</b></i><span class="legend-name">Adenina</span></span>
+        <span class="legend-item" style="--swatch-glow:#C58FE0"><i style="background:#C58FE0"><b>T</b></i><span class="legend-name">Timina</span></span>
+        <span class="legend-item" style="--swatch-glow:#F3768A"><i style="background:#F3768A"><b>C</b></i><span class="legend-name">Citosina</span></span>
+        <span class="legend-item" style="--swatch-glow:#6C7FD8"><i style="background:#6C7FD8"><b>G</b></i><span class="legend-name">Guanina</span></span>
+        <span class="legend-item" style="--swatch-glow:#E8C77E; grid-column: 1 / -1"><i style="background:#E8C77E"><b>↔</b></i><span class="legend-name">Esqueleto azúcar-fosfato</span></span>
     </div>
 </nav>
 
@@ -1381,261 +1547,6 @@ GJHYA1bvWxP16K7bJrtqW1q969yb/nBR2FW+6OyjoWocQJMVcmJrsv1rQcdLqAeLOX0Pe10oT6xwsGwE
             {
                 q: "2. Demostró la falsedad de la generación espontánea usando matraces cuello de cisne:",
                 options: ["Redi", "Needham", "Pasteur", "Oparin", "Spallanzani"],
-                correct: 2
-            },
-            {
-                q: "3. Respecto a las teorías sobre el origen de la vida, se le atribuye haber propuesto la \"Panspermia Dirigida\" mediante el uso de naves espaciales no tripuladas:",
-                options: ["Svante Arrhenius", "Justus von Liebig", "Francis Crick y Leslie Orgel", "Joan Oró y Fred Hoyle", "Helmut Richter"],
-                correct: 2
-            },
-            {
-                q: "4. La teoría de Oparin y Haldane postula una atmósfera primitiva reductora. ¿Cuál de los siguientes gases NO formaba parte del gas atmosférico primigenio según esta teoría?",
-                options: ["Metano (CH₄)", "Amoniaco (NH₃)", "Oxígeno molecular (O₂)", "Vapor de agua (H₂O)", "Sulfuro de hidrógeno (H₂S)"],
-                correct: 2
-            },
-            {
-                q: "5. Stanley Miller y Harold Urey en 1953 lograron sintetizar aminoácidos a partir de gases inorgánicos. Indique cuál fue el aminoácido obtenido en mayor abundancia durante el experimento:",
-                options: ["Metionina", "Glicina", "Triptófano", "Cisteína", "Lisina"],
-                correct: 1
-            },
-            {
-                q: "6. En los experimentos de Sidney Fox sobre el origen de las protocélulas, al calentar mezclas secas de aminoácidos se obtuvieron:",
-                options: ["Coacervados lipidicos", "Sulfobios y colpoides", "Microesferas proteinoides", "Priones autorreplicantes", "Liposomas de bicapa"],
-                correct: 2
-            },
-            {
-                q: "7. El investigador Alfonso Herrera formuló estudios sobre el origen de la vida bajo el concepto de Plasmogenia, donde sintetizó estructuras denominadas:",
-                options: ["Coacervados solubles", "Sulfobios y colpoides", "Protobiontes de arcilla", "Viriones ancestrales", "Microesferas alcalinas"],
-                correct: 1
-            },
-            {
-                q: "8. Louis Pasteur refutó definitivamente la teoría de la generación espontánea o abiogénesis mediante el uso de:",
-                options: ["Frascos herméticos con carne cocida", "Matraces con cuello de cisne", "Cajas de Petri con agar nutritivo", "Infusiones de heno hervidas por semanas", "Contenedores cubiertos con gasa fina"],
-                correct: 1
-            },
-            {
-                q: "9. Lamarck postuló en su teoría evolutiva la \"Ley del uso y del desuso\". ¿Cuál de los siguientes científicos refutó experimentalmente la herencia de los caracteres adquiridos cortando colas a ratones?",
-                options: ["Hugo de Vries", "Charles Darwin", "August Weismann", "Thomas Malthus", "Ernst Haeckel"],
-                correct: 2
-            },
-            {
-                q: "10. Las alas de un murciélago y las aletas pectorales de una ballena tienen un mismo origen embrionario pero realizan funciones distintas. Constituyen un ejemplo claro de:",
-                options: ["Órganos análogos y evolución convergente", "Órganos homólogos y evolución divergente", "Órganos vestigiales y atavismo", "Órganos rudimentarios sin valor adaptativo", "Homoplasia por convergencia ambiental"],
-                correct: 1
-            },
-            {
-                q: "11. Las alas de un insecto y las alas de un ave cumplen la misma función (volar), pero tienen distinto origen morfológico y embrionario. Estas estructuras son llamadas:",
-                options: ["Estratiformes", "Homólogas", "Análogas", "Atávicas", "Cladísticas"],
-                correct: 2
-            },
-            {
-                q: "12. La presencia del apéndice cecal y las vértebras coccígeas en la especie humana representan pruebas anatómicas evolutivas clasificadas como:",
-                options: ["Órganos homólogos", "Órganos análogos", "Órganos rudimentarios o vestigiales", "Adaptaciones convergentes", "Neofuncionalizaciones"],
-                correct: 2
-            },
-            {
-                q: "13. El fósil de Archaeopteryx lithographica representa un importante \"organismo puente\" o forma transicional entre los grupos de:",
-                options: ["Peces y anfibios", "Anfibios y reptiles", "Reptiles y aves", "Aves y mamíferos", "Reptiles y mamíferos monotremas"],
-                correct: 2
-            },
-            {
-                q: "14. El mecanismo de especiación que ocurre debido al aislamiento geográfico de poblaciones originarias se denomina:",
-                options: ["Especiación simpátrica", "Especiación alopátrica", "Especiación parapátrica", "Especiación estasi pátrica", "Hibridación reticulada"],
-                correct: 1
-            },
-            {
-                q: "15. La teoría Mutacionista de la evolución que proponía que las mutaciones eran la única fuerza impulsora del cambio evolutivo fue formulada por:",
-                options: ["Jean Baptiste Lamarck", "Charles Darwin", "Hugo de Vries", "Theodosius Dobzhansky", "Ernst Mayr"],
-                correct: 2
-            },
-            {
-                q: "16. El concepto de Neodarwinismo o Teoría Sintética de la Evolución integra la selección natural darwiniana con los aportes de:",
-                options: ["La embriología de Haeckel únicamente", "La genética mendeliana y de poblaciones", "La biogénesis de Spallanzani", "El catastrofismo paleontológico de Cuvier", "El fijismo de Carlos Linneo"],
-                correct: 1
-            },
-            {
-                q: "17. Los girasoles orientan la posición de sus flores hacia la luz solar durante el día. Este tipo de respuesta frente a un estímulo unidireccional permanente se clasifica como:",
-                options: ["Fototactismo positivo", "Fotonastia reversible", "Fototropismo positivo", "Tigmotropismo negativo", "Quimiotactismo positivo"],
-                correct: 2
-            },
-            {
-                q: "18. El cierre rápido de las hojas de la planta carnívora Dionaea muscipula o de la \"mimosa púdica\" al roce mecánico es un ejemplo de:",
-                options: ["Seismotropismo permanente", "Tigmonastia o seismonastia", "Quimiotactismo negativo", "Geotropismo negativo", "Fototactismo temporal"],
-                correct: 1
-            },
-            {
-                q: "19. El desplazamiento libre de bacterias o leucocitos atraídos hacia una sustancia química secretada se define como:",
-                options: ["Quimiotropismo positivo", "Quimionastia", "Quimiotactismo positivo", "Hidrotropismo activo", "Barotactismo negativo"],
-                correct: 2
-            },
-            {
-                q: "20. Las arqueobacterias extremófilas poseen características bioquímicas únicas en sus membranas celulares que les permiten resistir condiciones drásticas. Indique la característica correcta:",
-                options: ["Ácidos grasos lineales unidos por enlace éster", "Cadenas de fitano unidas al glicerol mediante enlace éter", "Presencia de mureína gruesa con puentes de pentaglicina", "Ausencia total de proteínas semejantes a histonas", "Membrana celular compuesta exclusivamente por glucocalix"],
-                correct: 1
-            },
-            {
-                q: "21. Las arqueobacterias que viven en ambientes volcánicos marinos y fuentes termales ácidas a más de 80 °C y pH 2 pertenecen al grupo de las:",
-                options: ["Halófilas extremas", "Metanógenas estrictas", "Termoacidófilas", "Cianobacterias fijadoras", "Micoplasmas de suelo"],
-                correct: 2
-            },
-            {
-                q: "22. La pared celular de las eubacterias está compuesta estructuralmente por un peptidoglucano denominado:",
-                options: ["Quitina", "Pseudomureína", "Mureína", "Celulosa", "Alginato"],
-                correct: 2
-            },
-            {
-                q: "23. ¿Cuál de las siguientes bacterias Gram negativas en forma de coma móvil con un flagelo polar es la causante de diarreas acuosas masivas \"en agua de arroz\"?",
-                options: ["Salmonella typhi", "Vibrio cholerae", "Shigella dysenteriae", "Helicobacter pylori", "Escherichia coli"],
-                correct: 1
-            },
-            {
-                q: "24. El bacilo aeróbico estricto resistente al ácido-alcohol (BAAR) causante de la tuberculosis en humanos es:",
-                options: ["Mycobacterium leprae", "Corynebacterium diphtheriae", "Mycobacterium tuberculosis", "Clostridium tetani", "Bacillus anthracis"],
-                correct: 2
-            },
-            {
-                q: "25. La bacteria anaerobia esporulada causante del tétanos por contaminación de heridas profundas es:",
-                options: ["Clostridium perfringens", "Clostridium botulinum", "Clostridium tetani", "Bartonella bacilliformis", "Treponema pallidum"],
-                correct: 2
-            },
-            {
-                q: "26. Microorganismos procariotas que carecen totalmente de pared celular y causan neumonía atípica en jóvenes:",
-                options: ["Rickettsias", "Clamideas", "Micoplasmas", "Espiroquetas", "Mixobacterias"],
-                correct: 2
-            },
-            {
-                q: "27. La \"Bomba de Carrión\" o Fiebre de la Oroya es provocada por la bacteria pleomórfica transmitida por la titira (Lutzomyia):",
-                options: ["Yersinia pestis", "Bartonella bacilliformis", "Rickettsia prowazekii", "Borrelia burgdorferi", "Neisseria meningitidis"],
-                correct: 1
-            },
-            {
-                q: "28. Las cianobacterias como Nostoc commune (\"cushuro\") poseen estructuras especializadas para la fijación del nitrógeno atmosférico denominadas:",
-                options: ["Acinetos", "Heterocistes", "Hormogonios", "Frústulas", "Endosporas"],
-                correct: 1
-            },
-            {
-                q: "29. En el reino Protista, las algas diatomeas se caracterizan por presentar una pared celular impregnada de sílice hidratado denominada:",
-                options: ["Teca de celulosa", "Frústula", "Pellícula proteica", "Lorica quitinosa", "Cubierta algínica"],
-                correct: 1
-            },
-            {
-                q: "30. La proliferación masiva de algas pirrofitas (dinoflagelados) en las costas marinas causa el fenómeno tóxico conocido como:",
-                options: ["Marea negra", "Eutrofización lacustre", "Marea roja", "Bloom verdoso", "Blanqueamiento coralino"],
-                correct: 2
-            },
-            {
-                q: "31. Las algas rojas o Rodofitas poseen como pigmentos fotosintéticos accesorios característicos de gran profundidad:",
-                options: ["Clorofila b y Fucoxantina", "Clorofila d y Ficoeritrina", "Clorofila c y Ficocianina", "Caroteno y Xanthofila", "Bacterioclorofila a"],
-                correct: 1
-            },
-            {
-                q: "32. Protozoario flagelado que habita el tracto urogenital humano produciendo vulvovaginitis o uretritis con leucorrea espumosa:",
-                options: ["Giardia lamblia", "Trichomonas vaginalis", "Leishmania peruviana", "Trypanosoma cruzi", "Entamoeba histolytica"],
-                correct: 1
-            },
-            {
-                q: "33. El agente causal de la enfermedad de Chagas, transmitido por la picadura y deyecciones de la chirimacha (Triatoma infestans), es:",
-                options: ["Trypanosoma brucei", "Plasmodium vivax", "Trypanosoma cruzi", "Toxoplasma gondii", "Balantidium coli"],
-                correct: 2
-            },
-            {
-                q: "34. Protozoario ciliado parásito de gran tamaño que afecta el intestino grueso de cerdos y humanos provocando disentería ciliada:",
-                options: ["Paramecium caudatum", "Balantidium coli", "Entamoeba coli", "Cryptosporidium parvum", "Isospora belli"],
-                correct: 1
-            },
-            {
-                q: "35. Los hongos verdaderos se dividen en clases según sus esporas sexuales. Aquellos que producen esporas endógenas dentro de un saco o asca se denominan:",
-                options: ["Ficomicetos", "Ascomicetos", "Basidiomicetos", "Deuteromicetos", "Mixomicetos"],
-                correct: 1
-            },
-            {
-                q: "36. El moho negro del pan (Rhizopus nigricans) es un hongo saprófito caracterizado por presentar hifas no tabicadas o:",
-                options: ["Hifas septadas monocarióticas", "Hifas cenocíticas", "Pseudohifas gemantes", "Basidios dicarióticos", "Ascocarpos fibrosos"],
-                correct: 1
-            },
-            {
-                q: "37. Los llamados \"hongos imperfectos\" agrupan a especies en las que aún no se ha descubierto su reproducción sexual. Esta clase es:",
-                options: ["Oomicetos", "Zigomicetos", "Deuteromicetos", "Basidiomicetos", "Actinomicetos"],
-                correct: 2
-            },
-            {
-                q: "38. La levadura utilizada tradicionalmente en la fermentación alcohólica del pan y la cerveza es:",
-                options: ["Candida albicans", "Saccharomyces cerevisiae", "Penicillium notatum", "Aspergillus niger", "Rhizopus stolonifer"],
-                correct: 1
-            },
-            {
-                q: "39. En el reino Vegetal, las plantas briofitas (como los musgos) se caracterizan fisiológicamente por ser:",
-                options: ["Traqueofitas con xilema lignificado", "Plantas avasculares sin verdaderos tejidos conductores", "Fanerógamas con semillas desnudas", "Espermatofitas con flores completas", "Pteridofitas con esporangios en soros"],
-                correct: 1
-            },
-            {
-                q: "40. Los helechos pertenecen a las Pteridofitas. En el envés de sus frondas se observan agrupaciones de esporangios denominadas:",
-                options: ["Estróbilos", "Soros", "Estigmas", "Rizoides", "Conos"],
-                correct: 1
-            },
-            {
-                q: "41. Las plantas Gimnospermas (como los pinos y cipreses) se diferencian fundamentalmente de las Angiospermas por:",
-                options: ["Desarrollar frutos carnosos con semillas encubiertas", "Carecer de tejido vascular xilemático", "Presentar semillas al descubierto sobre escamas leñosas", "Poseer flor hermafrodita vistosa", "Presentar doble fecundación típica"],
-                correct: 2
-            },
-            {
-                q: "42. Indique una característica distintiva de las plantas Angiospermas Monocotiledóneas:",
-                options: ["Raíz pivotante o axonomorfa", "Hojas con nervadura retinervia o ramificada", "Hojas con nervadura paralelinervia y raíz fasciculada", "Semilla con dos cotiledones ricos en almidón", "Piezas florales en múltiplos de 4 o 5"],
-                correct: 2
-            },
-            {
-                q: "43. Los animales del Phylum Porifera (esponjas) se diferencian de todos los demás eumetazoos porque:",
-                options: ["Tienen simetría bilateral estricta", "Carecen de tejidos verdaderos y órganos (Parazoos)", "Presentan celoma del tipo enterocelia", "Son triploblásticos deuterostomados", "Tienen tubo digestivo completo con boca y ano"],
-                correct: 1
-            },
-            {
-                q: "44. Células flageladas exclusivas de los poríferos responsables de la circulación de agua y captura de partículas alimenticias:",
-                options: ["Cnidocitos", "Coanocitos", "Células flamígeras", "Nematocistos", "Pinacocitos"],
-                correct: 1
-            },
-            {
-                q: "45. Los celentéreos o cnidarios (hidras, malaguas, corales) se caracterizan por ser animales con simetría radial y desarrollo:",
-                options: ["Triploblástico acelomado", "Diploblástico (ectodermo y endodermo)", "Seudocelomado con ano funcional", "Eucelomado protostomado", "Ablástico sin capas germinativas"],
-                correct: 1
-            },
-            {
-                q: "46. El aparato excretor de los Platelmintos (gusanos planos como las planarias) está formado por unidades excretoras llamadas:",
-                options: ["Túbulos de Malpighi", "Nefridios con glándula verde", "Células en llama o flamígeras", "Órganos de Bojanus", "Metanefridios con nefrostoma"],
-                correct: 2
-            },
-            {
-                q: "47. Los gusanos nemátodos como Ascaris lumbricoides presentan un plan corporal de tubo dentro de tubo con una cavidad corporal denominada:",
-                options: ["Celoma verdadero", "Seudoceloma", "Hemocele vascular", "Arquénteron", "Blastocoele secundario"],
-                correct: 1
-            },
-            {
-                q: "48. Estructura rascadora quitinosa presente en la cavidad bucal de la mayoría de los moluscos (excepto bivalvos):",
-                options: ["Manto calcáreo", "Rádula", "Órgano de Bojanus", "Pie muscular", "Sifón de chorro"],
-                correct: 1
-            },
-            {
-                q: "49. Los artrópodos poseen un exoesqueleto rígido que deben mudar periódicamente para crecer. Dicho exoesqueleto está constituido por:",
-                options: ["Carbonato de calcio únicamente", "Quitina asociada a proteínas", "Queratina rica en azufre", "Mureína y glucoproteínas", "Silicato de magnesio"],
-                correct: 1
-            },
-            {
-                q: "50. En el Phylum Artrópodos, las arañas y escorpiones pertenecen al subphylum Chelicerata y se caracterizan por presentar:",
-                options: ["Un par de antenas y mandíbulas", "Quelíceros, pedipalpos y 4 pares de patas caminadoras", "Tres pares de patas y alas membranosas", "Dos pares de antenas y branquias foliáceas", "Cuerpo dividido en cabeza, tórax y abdomen"],
-                correct: 1
-            },
-            {
-                q: "51. Los equinodermos (estrellas y erizos de mar) son animales marinos caracterizados por presentar en estado adulto simetría:",
-                options: ["Bilateral primaria", "Pentarradial", "Asimétrica amorfa", "Birradial doble", "Esférica homogénea"],
-                correct: 1
-            },
-            {
-                q: "52. Durante el desarrollo embrionario de los animales deuterostomados (como equinodermos y cordados), el blastóporo da origen a:",
-                options: ["La boca directamente", "El ano", "Las hendiduras branquiales", "El celoma esquizocélico", "El tubo neural dorsal"],
-                correct: 1
-            },
-            {
-                q: "53. Relación ecológica interespecífica en la que una especie se beneficia y la otra no obtiene beneficio ni perjuicio (neutral +/0):",
-                options: ["Mutualismo", "Parasitismo", "Comensalismo", "Amensalismo", "Competencia"],
                 correct: 2
             }
         ],
@@ -2094,6 +2005,22 @@ GJHYA1bvWxP16K7bJrtqW1q969yb/nBR2FW+6OyjoWocQJMVcmJrsv1rQcdLqAeLOX0Pe10oT6xwsGwE
         const svg = document.getElementById('helix-svg');
         svg.setAttribute('viewBox', `0 0 260 ${svgHeight}`);
 
+        // Degradados y filtros reutilizables para el brillo del ADN
+        const defs = document.createElementNS(SVG_NS, 'defs');
+        defs.innerHTML = `
+            <linearGradient id="backboneGradient" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#FBF2DE" />
+                <stop offset="45%" stop-color="#E8C77E" />
+                <stop offset="100%" stop-color="#C9992E" />
+            </linearGradient>
+            <linearGradient id="shimmerGradient" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0" />
+                <stop offset="50%" stop-color="#FFFFFF" stop-opacity="0.95" />
+                <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0" />
+            </linearGradient>
+        `;
+        svg.appendChild(defs);
+
         // Cadenas de azúcar-fosfato (esqueleto)
         let leftD = '', rightD = '';
         for (let y = 0; y <= svgHeight; y += 4) {
@@ -2107,6 +2034,14 @@ GJHYA1bvWxP16K7bJrtqW1q969yb/nBR2FW+6OyjoWocQJMVcmJrsv1rQcdLqAeLOX0Pe10oT6xwsGwE
             p.setAttribute('d', d);
             p.setAttribute('class', 'backbone');
             svg.appendChild(p);
+        });
+
+        // Brillo animado que "recorre" cada cadena, como energía fluyendo por el ADN
+        [leftD, rightD].forEach((d, i) => {
+            const shimmer = document.createElementNS(SVG_NS, 'path');
+            shimmer.setAttribute('d', d);
+            shimmer.setAttribute('class', 'backbone-shimmer' + (i === 1 ? ' reverse' : ''));
+            svg.appendChild(shimmer);
         });
 
         // Peldaños con las bases (clicables)
@@ -2145,15 +2080,24 @@ GJHYA1bvWxP16K7bJrtqW1q969yb/nBR2FW+6OyjoWocQJMVcmJrsv1rQcdLqAeLOX0Pe10oT6xwsGwE
                 line.setAttribute('stroke', baseColors[seg.base]);
                 line.setAttribute('stroke-width', grosor.toFixed(1));
                 line.setAttribute('stroke-linecap', 'round');
+                line.style.setProperty('--glow-color', baseColors[seg.base]);
                 g.appendChild(line);
 
                 const dot = document.createElementNS(SVG_NS, 'circle');
                 dot.setAttribute('class', 'node-dot');
                 dot.setAttribute('cx', seg.x2);
                 dot.setAttribute('cy', seg.y2);
-                dot.setAttribute('r', 6);
-                dot.setAttribute('fill', '#E8C77E');
+                dot.setAttribute('r', 8);
+                dot.setAttribute('fill', baseColors[seg.base]);
+                dot.style.setProperty('--glow-color', baseColors[seg.base]);
                 g.appendChild(dot);
+
+                const baseLetter = document.createElementNS(SVG_NS, 'text');
+                baseLetter.setAttribute('class', 'base-letter');
+                baseLetter.setAttribute('x', seg.x2);
+                baseLetter.setAttribute('y', seg.y2 + 0.5);
+                baseLetter.textContent = seg.base;
+                g.appendChild(baseLetter);
 
                 g.addEventListener('mouseenter', () => {
                     mostrarTooltipTema(g, seg.tema);
@@ -2273,6 +2217,11 @@ GJHYA1bvWxP16K7bJrtqW1q969yb/nBR2FW+6OyjoWocQJMVcmJrsv1rQcdLqAeLOX0Pe10oT6xwsGwE
 
         temaActivo = temaNombre;
 
+        // La selección se comporta como un modal real: bloqueamos el scroll
+        // de sidebar y contenido para que la carátula no se desplace mientras
+        // el usuario baja o hace scroll con inercia.
+        document.body.classList.add('tema-bloqueado');
+
         // Oculta bienvenida y cuestionario, muestra la carátula
         document.getElementById('welcome-msg').style.display = 'none';
         document.getElementById('quiz-container').style.display = 'none';
@@ -2303,8 +2252,13 @@ GJHYA1bvWxP16K7bJrtqW1q969yb/nBR2FW+6OyjoWocQJMVcmJrsv1rQcdLqAeLOX0Pe10oT6xwsGwE
         if (glow) glow.classList.remove('visible');
         ultimaBaseActiva = null;
         ocultarTooltipTema();
+        if (glowTrackingId !== null) {
+            cancelAnimationFrame(glowTrackingId);
+            glowTrackingId = null;
+        }
 
         temaActivo = null;
+        document.body.classList.remove('tema-bloqueado');
     }
 
     document.getElementById('cancel-theme-btn').addEventListener('click', cerrarThemePreview);
@@ -2465,8 +2419,13 @@ GJHYA1bvWxP16K7bJrtqW1q969yb/nBR2FW+6OyjoWocQJMVcmJrsv1rQcdLqAeLOX0Pe10oT6xwsGwE
         if (glow) glow.classList.remove('visible');
         ultimaBaseActiva = null;
         ocultarTooltipTema();
+        if (glowTrackingId !== null) {
+            cancelAnimationFrame(glowTrackingId);
+            glowTrackingId = null;
+        }
 
         temaActivo = null;
+        document.body.classList.remove('tema-bloqueado');
     }
 
     document.getElementById('quiz-close-btn').addEventListener('click', cerrarQuiz);
