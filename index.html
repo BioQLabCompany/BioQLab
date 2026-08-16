@@ -648,24 +648,14 @@
             flex-shrink: 0;
         }
 
-        #theme-glow {
+        .dna-particle {
             position: fixed;
-            border-radius: 999px;
-            z-index: 1000001;
+            border-radius: 50%;
             pointer-events: none;
-            opacity: 0;
-            filter: blur(0.5px);
-            transition: opacity 0.25s ease;
-        }
-
-        #theme-glow.visible {
-            opacity: 1;
-            animation: glowPulse 1.8s ease-in-out infinite;
-        }
-
-        @keyframes glowPulse {
-            0%, 100% { filter: blur(0.5px) brightness(1); }
-            50% { filter: blur(1.5px) brightness(1.25); }
+            z-index: 1000001;
+            background: radial-gradient(circle, #FBF2DE 0%, #E8C77E 55%, #C9992E 100%);
+            box-shadow: 0 0 6px 2px rgba(232, 199, 126, 0.75);
+            will-change: transform, opacity;
         }
 
         #theme-tooltip {
@@ -813,17 +803,26 @@
                 overflow: hidden;
             }
 
+            /* El ADN es lo importante: se manda abajo y se le da más alto,
+               mientras que el panel superior (bienvenida / carátula / quiz)
+               se recorta para dejarle el protagonismo a la doble hélice. */
             nav {
+                order: 2;
                 width: 100%;
-                height: 42dvh;
-                max-height: 42dvh;
+                height: 58dvh;
+                max-height: 58dvh;
                 box-sizing: border-box;
                 border-right: none;
-                border-bottom: 1px solid var(--border-soft);
+                border-top: 1px solid var(--border-soft);
+                border-bottom: none;
                 padding: 10px 12px 8px;
                 flex-shrink: 0;
                 overflow-y: auto;
                 overflow-x: hidden;
+            }
+
+            main {
+                order: 1;
             }
 
             .brand {
@@ -880,8 +879,10 @@
             main {
                 width: 100%;
                 box-sizing: border-box;
-                padding: 12px;
-                flex: 1;
+                padding: 10px 12px;
+                flex: 0 0 auto;
+                height: 42dvh;
+                max-height: 42dvh;
                 min-height: 0;
                 overflow-y: auto;
                 overflow-x: hidden;
@@ -908,6 +909,29 @@
                 /* dvh evita el salto por la barra de direcciones del navegador móvil */
                 height: min(82dvh, 620px);
                 max-height: min(82dvh, 620px);
+            }
+
+            /* Cuando el simulador de examen está abierto en móvil, el ADN se
+               aparta por completo y el cuadro de preguntas se extiende hasta
+               ocupar toda la pantalla (en vez de quedar limitado al 42dvh
+               que normalmente le deja libre el panel del ADN). */
+            body.quiz-abierto nav {
+                display: none;
+            }
+
+            body.quiz-abierto main {
+                order: 1;
+                width: 100%;
+                height: 100dvh;
+                max-height: 100dvh;
+                flex: 1 1 auto;
+                padding: 12px;
+                justify-content: center;
+            }
+
+            body.quiz-abierto .quiz-card {
+                height: 100%;
+                max-height: 100%;
             }
 
             .quiz-header {
@@ -1039,9 +1063,14 @@
         /* Teléfonos pequeños: ADN todavía más compacto para que siempre sea visible */
         @media (max-width: 480px) {
             nav {
-                height: 39dvh;
-                max-height: 39dvh;
+                height: 60dvh;
+                max-height: 60dvh;
                 padding-top: 8px;
+            }
+
+            main {
+                height: 40dvh;
+                max-height: 40dvh;
             }
 
             #helix-wrap {
@@ -1077,8 +1106,13 @@
         /* Pantallas muy estrechas */
         @media (max-width: 360px) {
             nav {
-                height: 37dvh;
-                max-height: 37dvh;
+                height: 62dvh;
+                max-height: 62dvh;
+            }
+
+            main {
+                height: 38dvh;
+                max-height: 38dvh;
             }
 
             #helix-wrap {
@@ -2809,53 +2843,54 @@ GJHYA1bvWxP16K7bJrtqW1q969yb/nBR2FW+6OyjoWocQJMVcmJrsv1rQcdLqAeLOX0Pe10oT6xwsGwE
     }
 
     let temaActivo = null;
-    let ultimaBaseActiva = null;
-    let ultimosColores = null;
     buildHelix();
 
-    // El resaltado (theme-glow) es un div "position: fixed" fuera del SVG,
-    // así que su posición se calcula a mano con getBoundingClientRect().
-    // Depender solo del evento "scroll" no basta: en varios navegadores
-    // (sobre todo móviles) el scroll con inercia dispara ese evento de forma
-    // tardía o discontinua, por lo que el resaltado se quedaba "atrás" y
-    // parecía no seguir a la base seleccionada. Con un loop de
-    // requestAnimationFrame la posición se recalcula en cada fotograma
-    // mientras haya un tema activo, así el resaltado queda perfectamente
-    // fijo a su base sin importar cómo se dispare el scroll.
-    let glowTrackingId = null;
-    function iniciarSeguimientoGlow() {
-        if (glowTrackingId !== null) return;
-        const loop = () => {
-            if (!ultimaBaseActiva) {
-                glowTrackingId = null;
-                return;
-            }
-            actualizarResaltadoTema(ultimaBaseActiva, ultimosColores[0], ultimosColores[1]);
-            glowTrackingId = requestAnimationFrame(loop);
-        };
-        glowTrackingId = requestAnimationFrame(loop);
-    }
+    // Al seleccionar un tema, en lugar de un resaltado que sigue a la base
+    // (frágil con el scroll y con errores visuales), se emite una pequeña
+    // ráfaga de partículas doradas -del mismo color que el ADN- que surgen
+    // del punto seleccionado y se desvanecen en el aire en un par de segundos.
+    const COLORES_PARTICULA = ['#FBF2DE', '#E8C77E', '#E8C77E', '#C9992E'];
 
-    function actualizarResaltadoTema(rungGroup, colorIzq, colorDer) {
-        ultimaBaseActiva = rungGroup;
-        ultimosColores = [colorIzq, colorDer];
-        const rect = rungGroup.getBoundingClientRect();
-        const pad = 6;
+    function emitirParticulasTema(origenEl) {
+        const rect = origenEl.getBoundingClientRect();
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
+        const cantidad = 18;
 
-        let glow = document.getElementById('theme-glow');
-        if (!glow) {
-            glow = document.createElement('div');
-            glow.id = 'theme-glow';
-            document.body.appendChild(glow);
+        for (let i = 0; i < cantidad; i++) {
+            const particula = document.createElement('div');
+            particula.className = 'dna-particle';
+
+            const size = 3 + Math.random() * 4;
+            particula.style.width = size + 'px';
+            particula.style.height = size + 'px';
+            particula.style.left = centerX + 'px';
+            particula.style.top = centerY + 'px';
+            particula.style.background = COLORES_PARTICULA[
+                Math.floor(Math.random() * COLORES_PARTICULA.length)
+            ];
+
+            document.body.appendChild(particula);
+
+            const angulo = Math.random() * Math.PI * 2;
+            const distancia = 30 + Math.random() * 70;
+            const dx = Math.cos(angulo) * distancia;
+            const dy = Math.sin(angulo) * distancia;
+            const duracion = 900 + Math.random() * 1000;
+
+            const animacion = particula.animate([
+                { transform: 'translate(-50%, -50%) scale(1)', opacity: 0.95 },
+                {
+                    transform: `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px)) scale(0.25)`,
+                    opacity: 0
+                }
+            ], {
+                duration: duracion,
+                easing: 'cubic-bezier(0.25, 0.8, 0.4, 1)'
+            });
+
+            animacion.onfinish = () => particula.remove();
         }
-
-        glow.style.left = (rect.left - pad) + 'px';
-        glow.style.top = (rect.top - pad) + 'px';
-        glow.style.width = (rect.width + pad * 2) + 'px';
-        glow.style.height = (rect.height + pad * 2) + 'px';
-        glow.style.background = `linear-gradient(90deg, ${colorIzq}, ${colorDer})`;
-        glow.style.boxShadow = `0 0 18px 4px ${colorIzq}99, 0 0 18px 4px ${colorDer}99`;
-        glow.classList.add('visible');
     }
 
     function mostrarTooltipTema(g, nombreTema) {
@@ -2896,8 +2931,7 @@ GJHYA1bvWxP16K7bJrtqW1q969yb/nBR2FW+6OyjoWocQJMVcmJrsv1rQcdLqAeLOX0Pe10oT6xwsGwE
 
         document.querySelectorAll('.base-shape').forEach(el => el.classList.remove('active'));
         elemento.classList.add('active');
-        actualizarResaltadoTema(rungGroup, colorIzq, colorDer);
-        iniciarSeguimientoGlow();
+        emitirParticulasTema(elemento);
 
         temaActivo = temaNombre;
 
@@ -2932,14 +2966,7 @@ GJHYA1bvWxP16K7bJrtqW1q969yb/nBR2FW+6OyjoWocQJMVcmJrsv1rQcdLqAeLOX0Pe10oT6xwsGwE
         overlay.style.visibility = 'hidden';
 
         document.querySelectorAll('.base-shape').forEach(el => el.classList.remove('active'));
-        const glow = document.getElementById('theme-glow');
-        if (glow) glow.classList.remove('visible');
-        ultimaBaseActiva = null;
         ocultarTooltipTema();
-        if (glowTrackingId !== null) {
-            cancelAnimationFrame(glowTrackingId);
-            glowTrackingId = null;
-        }
 
         temaActivo = null;
         document.body.classList.remove('tema-bloqueado');
@@ -2963,7 +2990,11 @@ GJHYA1bvWxP16K7bJrtqW1q969yb/nBR2FW+6OyjoWocQJMVcmJrsv1rQcdLqAeLOX0Pe10oT6xwsGwE
     document.getElementById('start-test-btn').addEventListener('click', () => {
         document.getElementById('theme-preview').style.display = 'none';
         document.getElementById('quiz-container').style.display = 'block';
+        // En móvil, el simulador pasa a ocupar toda la pantalla (el ADN
+        // se aparta) para que el cuadro de preguntas se extienda hasta abajo.
+        document.body.classList.add('quiz-abierto');
         mostrarSiguientePregunta();
+        programarAjusteAltura();
     });
 
     const LETRAS_OPCIONES = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
@@ -3099,17 +3130,11 @@ GJHYA1bvWxP16K7bJrtqW1q969yb/nBR2FW+6OyjoWocQJMVcmJrsv1rQcdLqAeLOX0Pe10oT6xwsGwE
         overlay.style.visibility = 'hidden';
 
         document.querySelectorAll('.base-shape').forEach(el => el.classList.remove('active'));
-        const glow = document.getElementById('theme-glow');
-        if (glow) glow.classList.remove('visible');
-        ultimaBaseActiva = null;
         ocultarTooltipTema();
-        if (glowTrackingId !== null) {
-            cancelAnimationFrame(glowTrackingId);
-            glowTrackingId = null;
-        }
 
         temaActivo = null;
         document.body.classList.remove('tema-bloqueado');
+        document.body.classList.remove('quiz-abierto');
     }
 
     document.getElementById('quiz-close-btn').addEventListener('click', cerrarQuiz);
