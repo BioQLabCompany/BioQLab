@@ -1124,13 +1124,13 @@
                 font-size: 0.48rem;
             }
         }
-            /* --- Menú Célula --- */
+            /* --- Menú Célula (Biblioteca) --- */
         #cell-menu-wrap {
             position: fixed !important;
             top: 20px !important;
-            right: 24px !important;
+            left: 380px !important;
             bottom: auto !important;
-            left: auto !important;
+            right: auto !important;
             z-index: 900000 !important;
         }
 
@@ -1141,11 +1141,13 @@
             bottom: auto !important;
             left: auto !important;
             z-index: 900001 !important;
-            background: var(--accent-color);
+            background: #22222E;
             color: #fff;
             border: none;
             border-radius: 999px;
-            padding: 14px 22px;
+            height: 56px;
+            box-sizing: border-box;
+            padding: 0 22px;
             font-size: 0.85rem;
             font-weight: bold;
             letter-spacing: 1px;
@@ -1160,6 +1162,36 @@
         #cell-float-btn:hover {
             transform: translateY(-2px);
             box-shadow: 0 12px 26px rgba(0,0,0,0.4);
+        }
+        #cell-float-btn .cell-icon {
+            width: 18px;
+            height: 18px;
+            flex-shrink: 0;
+        }
+
+        /* --- Logo circular del macrófago (marca, esquina superior derecha) --- */
+        #macrofago-badge {
+            position: fixed;
+            top: 20px;
+            right: 24px;
+            z-index: 900000;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: #22222E;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 8px 22px rgba(0,0,0,0.35);
+        }
+        #macrofago-badge img {
+            width: 30px;
+            height: 30px;
+            display: block;
+            /* El logo original es de trazo oscuro; forzamos blanco para que
+               resalte sobre el fondo oscuro del círculo, sin importar el
+               modo claro/oscuro de la app. */
+            filter: brightness(0) invert(1);
         }
 
         #cell-menu-options {
@@ -1243,9 +1275,8 @@
         .cell-menu-empty {
             opacity: 0.55;
         }
-        #cell-float-btn .cell-emoji { font-size: 1.1rem; }
-
         .cell-menu-panel[hidden] { display: none; }
+        #cell-float-btn .cell-emoji { font-size: 1.1rem; }
 
         #cell-menu-back {
             position: absolute;
@@ -1292,14 +1323,26 @@
             #cell-menu-wrap {
                 position: fixed !important;
                 top: 12px !important;
-                right: 12px !important;
+                left: 12px !important;
                 bottom: auto !important;
-                left: auto !important;
+                right: auto !important;
             }
 
             #cell-float-btn {
-                padding: 11px 16px;
+                height: 46px;
+                padding: 0 16px;
                 font-size: 0.72rem;
+            }
+
+            #macrofago-badge {
+                top: 12px;
+                right: 12px;
+                width: 46px;
+                height: 46px;
+            }
+            #macrofago-badge img {
+                width: 24px;
+                height: 24px;
             }
         }
 
@@ -1552,13 +1595,17 @@ GJHYA1bvWxP16K7bJrtqW1q969yb/nBR2FW+6OyjoWocQJMVcmJrsv1rQcdLqAeLOX0Pe10oT6xwsGwE
 </footer>
 
 <script>
-    // Reutiliza el logo ya cargado (bacteriófago) en el encabezado del modal de preguntas,
-    // sin duplicar la imagen en el HTML.
-    (function () {
+    // Reutiliza el logo ya cargado (bacteriófago) en el encabezado del modal de preguntas
+    // y en la marca circular de la esquina superior derecha, sin duplicar la imagen en el HTML.
+    // Se espera a DOMContentLoaded porque el badge está más abajo en el documento.
+    document.addEventListener('DOMContentLoaded', function () {
         const origen = document.querySelector('.brand-logo');
         const destino = document.getElementById('quiz-header-logo');
         if (origen && destino) destino.src = origen.src;
-    })();
+
+        const destinoBadge = document.getElementById('macrofago-badge-logo');
+        if (origen && destinoBadge) destinoBadge.src = origen.src;
+    });
 
     const temas = [
         "SEM 1: Metodología, Origen y Evolución", "SEM 2: Organización Química",
@@ -1581,37 +1628,44 @@ GJHYA1bvWxP16K7bJrtqW1q969yb/nBR2FW+6OyjoWocQJMVcmJrsv1rQcdLqAeLOX0Pe10oT6xwsGwE
             {
                 q: "2. Demostró la falsedad de la generación espontánea usando matraces cuello de cisne:",
                 options: ["Redi", "Needham", "Pasteur", "Oparin", "Spallanzani"],
-                correct: 2
+                correct: 2,
+                slide: "https://drive.google.com/file/d/1pcYPBwZ0Hs1kj3D0RNFKCt_nup2SUW2Q/view?usp=sharing"
             },
             {
                 q: "3. Respecto a las teorías sobre el origen de la vida, se le atribuye haber propuesto la \"Panspermia Dirigida\" mediante el uso de naves espaciales no tripuladas:",
                 options: ["Svante Arrhenius", "Justus von Liebig", "Francis Crick y Leslie Orgel", "Joan Oró y Fred Hoyle", "Helmut Richter"],
-                correct: 2
+                correct: 2,
+                slide: "https://drive.google.com/file/d/1pcYPBwZ0Hs1kj3D0RNFKCt_nup2SUW2Q/view?usp=sharing"
             },
             {
                 q: "4. La teoría de Oparin y Haldane postula una atmósfera primitiva reductora. ¿Cuál de los siguientes gases NO formaba parte del gas atmosférico primigenio según esta teoría?",
                 options: ["Metano (CH4)", "Amoniaco (NH3)", "Oxígeno molecular (O2)", "Vapor de agua (H2O)", "Sulfuro de hidrógeno (H2S)"],
-                correct: 2
+                correct: 2,
+                slide: "https://drive.google.com/file/d/1pcYPBwZ0Hs1kj3D0RNFKCt_nup2SUW2Q/view?usp=sharing"
             },
             {
                 q: "5. Stanley Miller y Harold Urey en 1953 lograron sintetizar aminoácidos a partir de gases inorgánicos. Indique cuál fue el aminoácido obtenido en mayor abundancia durante el experimento:",
                 options: ["Metionina", "Glicina", "Triptófano", "Cisteína", "Lisina"],
-                correct: 1
+                correct: 1,
+                slide: "https://drive.google.com/file/d/1pcYPBwZ0Hs1kj3D0RNFKCt_nup2SUW2Q/view?usp=sharing"
             },
             {
                 q: "6. En los experimentos de Sidney Fox sobre el origen de las protocélulas, al calentar mezclas secas de aminoácidos se obtuvieron:",
                 options: ["Coacervados lipídicos", "Sulfobios y colpoides", "Microesferas proteinoides", "Priones autorreplicantes", "Liposomas de bicapa"],
-                correct: 2
+                correct: 2,
+                slide: "https://drive.google.com/file/d/1pcYPBwZ0Hs1kj3D0RNFKCt_nup2SUW2Q/view?usp=sharing"
             },
             {
                 q: "7. El investigador Alfonso Herrera formuló estudios sobre el origen de la vida bajo el concepto de Plasmogenia, donde sintetizó estructuras denominadas:",
                 options: ["Coacervados solubles", "Sulfobios y colpoides", "Protobiontes de arcilla", "Viriones ancestrales", "Microesferas alcalinas"],
-                correct: 1
+                correct: 1,
+                slide: "https://drive.google.com/file/d/1pcYPBwZ0Hs1kj3D0RNFKCt_nup2SUW2Q/view?usp=sharing"
             },
             {
                 q: "8. Louis Pasteur refutó definitivamente la teoría de la generación espontánea o abiogénesis mediante el uso de:",
                 options: ["Frascos herméticos con carne cocida", "Matraces con cuello de cisne", "Cajas de Petri con agar nutritivo", "Infusiones de heno hervidas por semanas", "Contenedores cubiertos con gasa fina"],
-                correct: 1
+                correct: 1,
+                slide: "https://drive.google.com/file/d/1pcYPBwZ0Hs1kj3D0RNFKCt_nup2SUW2Q/view?usp=sharing"
             },
             {
                 q: "9. Lamarck postuló en su teoría evolutiva la \"Ley del uso y del desuso\". ¿Cuál de los siguientes científicos refutó experimentalmente la herencia de los caracteres adquiridos cortando colas a ratones?",
@@ -3305,6 +3359,7 @@ GJHYA1bvWxP16K7bJrtqW1q969yb/nBR2FW+6OyjoWocQJMVcmJrsv1rQcdLqAeLOX0Pe10oT6xwsGwE
 
     let preguntasActuales = [];
     let indicePregunta = 0;
+    let preguntaActualSlide = null;
     let aciertos = 0;
     let errores = 0;
 
@@ -3708,6 +3763,10 @@ GJHYA1bvWxP16K7bJrtqW1q969yb/nBR2FW+6OyjoWocQJMVcmJrsv1rQcdLqAeLOX0Pe10oT6xwsGwE
         const textoSinNumeroManual = data.q.replace(/^\s*\d+[.\)]\s*/, '');
         document.getElementById('pregunta').innerText = textoSinNumeroManual;
 
+        // Guardamos el enlace a la diapositiva (si la pregunta tiene una
+        // asociada) para que el botón "Ver diapositiva del tema" la use.
+        preguntaActualSlide = data.slide || null;
+
         const containerOpciones = document.getElementById('opciones');
         containerOpciones.innerHTML = "";
         document.getElementById('next-btn').style.display = 'none';
@@ -3774,10 +3833,16 @@ GJHYA1bvWxP16K7bJrtqW1q969yb/nBR2FW+6OyjoWocQJMVcmJrsv1rQcdLqAeLOX0Pe10oT6xwsGwE
 
     document.getElementById('quiz-close-btn').addEventListener('click', cerrarQuiz);
 
-    // Botón "Ver diapositiva del tema": placeholder visual, la función se
-    // conectará próximamente al material de cada semana.
+    // Botón "Ver diapositiva del tema": si la pregunta actual tiene una
+    // diapositiva asociada (campo "slide"), la abre en una pestaña nueva.
+    // Para las demás preguntas, que todavía no tienen material enlazado,
+    // se muestra el aviso de siempre.
     document.getElementById('slide-link-btn').addEventListener('click', () => {
-        alert('Muy pronto podrás ver aquí la diapositiva de este tema.');
+        if (preguntaActualSlide) {
+            window.open(preguntaActualSlide, '_blank', 'noopener,noreferrer');
+        } else {
+            alert('Muy pronto podrás ver aquí la diapositiva de este tema.');
+        }
     });
 
     // ===================== Módulo: Célula interactiva =====================
@@ -4132,6 +4197,10 @@ GJHYA1bvWxP16K7bJrtqW1q969yb/nBR2FW+6OyjoWocQJMVcmJrsv1rQcdLqAeLOX0Pe10oT6xwsGwE
 </script>
 
 <div id="dim-overlay"></div>
+
+<div id="macrofago-badge" aria-hidden="true" title="BioQlab">
+    <img id="macrofago-badge-logo" alt="Logo BioQlab">
+</div>
 
 
 <div id="cell-menu-wrap">
