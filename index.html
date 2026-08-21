@@ -960,6 +960,170 @@ body.dark-mode .menu-option-text strong{
 
 </style>
 
+<style>
+/* =========================================================
+   PANTALLA ADN — selector de temas de Biología
+   ========================================================= */
+
+#screen-adn{
+  background: var(--surface);
+  background-image:
+    radial-gradient(var(--surface-line) 1.6px, transparent 1.6px);
+  background-size: 26px 26px;
+  transition: background-color .3s ease;
+}
+
+.adn-wrap{
+  position:relative;
+  z-index:2;
+  width:min(94%,720px);
+  max-height: 88vh;
+  padding:40px 34px 30px;
+  border:1px solid rgba(255,255,255,.09);
+  border-radius:22px;
+  background:linear-gradient(145deg,rgba(34,34,46,.84),rgba(20,21,26,.78));
+  box-shadow:0 24px 70px rgba(0,0,0,.34);
+  backdrop-filter:blur(18px);
+  -webkit-backdrop-filter:blur(18px);
+  animation:welcomeIn .65s cubic-bezier(.2,.8,.2,1) both;
+  display:flex;
+  flex-direction:column;
+}
+
+.adn-title{ margin-bottom:6px !important; }
+
+.dna-scroll{
+  position:relative;
+  margin-top:14px;
+  padding: 6px 4px 10px;
+  max-height: 54vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+.dna-scroll::-webkit-scrollbar{ width:6px; }
+.dna-scroll::-webkit-scrollbar-thumb{ background: rgba(120,135,180,.35); border-radius:6px; }
+
+.dna-list{
+  position:relative;
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  row-gap: 16px;
+  padding: 6px 0;
+}
+.dna-list::before{
+  content:"";
+  position:absolute;
+  left:50%; top:-4px; bottom:-4px;
+  width:2px;
+  transform:translateX(-50%);
+  background:linear-gradient(180deg,
+    rgba(120,135,180,0) 0%,
+    rgba(217,162,63,.55) 8%,
+    rgba(120,135,180,.55) 25%,
+    rgba(217,162,63,.55) 42%,
+    rgba(120,135,180,.55) 58%,
+    rgba(217,162,63,.55) 75%,
+    rgba(120,135,180,.55) 92%,
+    rgba(120,135,180,0) 100%);
+}
+
+.dna-node{
+  position:relative;
+  display:flex;
+  align-items:center;
+  gap:9px;
+  width:max-content;
+  max-width: 96%;
+  padding:9px 15px;
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:20px;
+  background:rgba(255,255,255,.045);
+  color:#f4f7f5;
+  font-family:"Segoe UI","Trebuchet MS",Arial,sans-serif;
+  font-size:12.5px;
+  line-height:1.25;
+  text-align:left;
+  cursor:pointer;
+  transition: transform .2s ease, border-color .2s ease, background .2s ease, box-shadow .2s ease;
+}
+.dna-node:hover{
+  transform:translateY(-2px) scale(1.02);
+  border-color:rgba(120,135,180,.45);
+  background:rgba(120,135,180,.10);
+  box-shadow:0 10px 22px rgba(0,0,0,.22);
+}
+.dna-node.is-selected{
+  border-color:rgba(217,162,63,.6);
+  background:rgba(217,162,63,.12);
+}
+
+.dna-node.left{ grid-column:1; justify-self:end; padding-right:24px; }
+.dna-node.right{ grid-column:2; justify-self:start; padding-left:24px; flex-direction:row-reverse; text-align:right; }
+
+.dna-node.left::after,
+.dna-node.right::after{
+  content:"";
+  position:absolute;
+  top:50%;
+  width:16px;
+  height:2px;
+  background: rgba(150,163,190,.55);
+}
+.dna-node.left::after{ right:-16px; }
+.dna-node.right::after{ left:-16px; }
+
+.dna-dot{
+  width:9px; height:9px;
+  border-radius:50%;
+  flex:0 0 auto;
+  background: var(--amber, #D9A23F);
+  box-shadow:0 0 8px rgba(217,162,63,.65);
+}
+.dna-node.right .dna-dot{
+  background:#8f9fca;
+  box-shadow:0 0 8px rgba(143,159,202,.65);
+}
+.dna-node.is-selected .dna-dot{
+  background:#fff;
+  box-shadow:0 0 10px rgba(255,255,255,.8);
+}
+
+.topic-chip{
+  display:none;
+  align-items:center;
+  gap:8px;
+  width:fit-content;
+  margin:2px 0 14px;
+  padding:6px 14px;
+  border-radius:20px;
+  border:1px solid rgba(217,162,63,.35);
+  background:rgba(217,162,63,.10);
+  color:#f4e7c8;
+  font-size:12.5px;
+  font-weight:700;
+  letter-spacing:.02em;
+}
+.topic-chip.show{ display:flex; }
+.topic-chip-dot{
+  width:8px; height:8px;
+  border-radius:50%;
+  background: var(--amber,#D9A23F);
+  box-shadow:0 0 8px rgba(217,162,63,.7);
+}
+
+@media (max-width:640px){
+  .adn-wrap{
+    width:calc(100% - 24px);
+    padding:30px 18px 22px;
+    max-height: 92vh;
+  }
+  .dna-scroll{ max-height:60vh; }
+  .dna-node{ font-size:11.5px; padding:8px 12px; max-width:98%; }
+  .dna-node.left{ padding-right:18px; }
+  .dna-node.right{ padding-left:18px; }
+}
+</style>
+
 </head>
 <body>
 
@@ -1032,6 +1196,10 @@ body.dark-mode .menu-option-text strong{
     <div class="learning-wrap">
       <div class="menu-eyebrow">Biología</div>
       <h2 class="learning-title">¿Qué te interesa aprender?</h2>
+      <div class="topic-chip" id="topic-chip">
+        <span class="topic-chip-dot"></span>
+        <span id="bio-topic-label">Tema</span>
+      </div>
       <p class="learning-sub">Elige una forma de explorar el contenido.</p>
 
       <div class="learning-options">
@@ -1060,7 +1228,7 @@ body.dark-mode .menu-option-text strong{
         </button>
       </div>
 
-      <button class="back-link" onclick="goTo('screen-cursos')">← Volver a cursos</button>
+      <button class="back-link" onclick="goTo('screen-adn')">← Volver a temas</button>
     </div>
   </section>
 
@@ -1078,7 +1246,7 @@ body.dark-mode .menu-option-text strong{
       <p class="cursos-sub">Elige un curso para comenzar</p>
 
       <div class="cursos-row">
-        <div class="curso-card bio" onclick="goTo('screen-biologia')">
+        <div class="curso-card bio" onclick="goTo('screen-adn')">
           <div class="curso-name">Biología</div>
           <div class="curso-tag">Disponible</div>
         </div>
@@ -1099,12 +1267,67 @@ body.dark-mode .menu-option-text strong{
     </div>
   </section>
 
+  <!-- PANTALLA 5: ADN DE BIOLOGÍA (temas) -->
+  <section id="screen-adn" class="screen">
+    <button class="theme-toggle" onclick="toggleTheme()" title="Cambiar tema">🌙</button>
+
+    <div class="adn-wrap">
+      <div class="menu-eyebrow">Biología</div>
+      <h2 class="learning-title adn-title">Elige un tema</h2>
+      <p class="learning-sub">Selecciona un nodo de la cadena para explorar el contenido.</p>
+
+      <div class="dna-scroll">
+        <div class="dna-list" id="dna-list">
+          <button class="dna-node left" data-topic="Bioelementos y Agua" onclick="selectTopic(this)"><span class="dna-dot"></span><span class="dna-label">Bioelementos y Agua</span></button>
+          <button class="dna-node right" data-topic="Glúcidos" onclick="selectTopic(this)"><span class="dna-dot"></span><span class="dna-label">Glúcidos</span></button>
+          <button class="dna-node left" data-topic="Lípidos" onclick="selectTopic(this)"><span class="dna-dot"></span><span class="dna-label">Lípidos</span></button>
+          <button class="dna-node right" data-topic="Proteínas" onclick="selectTopic(this)"><span class="dna-dot"></span><span class="dna-label">Proteínas</span></button>
+          <button class="dna-node left" data-topic="Ácidos Nucleicos" onclick="selectTopic(this)"><span class="dna-dot"></span><span class="dna-label">Ácidos Nucleicos</span></button>
+          <button class="dna-node right" data-topic="Enzimas y Vitaminas" onclick="selectTopic(this)"><span class="dna-dot"></span><span class="dna-label">Enzimas y Vitaminas</span></button>
+          <button class="dna-node left" data-topic="Virus" onclick="selectTopic(this)"><span class="dna-dot"></span><span class="dna-label">Virus</span></button>
+          <button class="dna-node right" data-topic="Célula Procariota" onclick="selectTopic(this)"><span class="dna-dot"></span><span class="dna-label">Célula Procariota</span></button>
+          <button class="dna-node left" data-topic="Célula Eucariota" onclick="selectTopic(this)"><span class="dna-dot"></span><span class="dna-label">Célula Eucariota</span></button>
+          <button class="dna-node right" data-topic="Fotosíntesis" onclick="selectTopic(this)"><span class="dna-dot"></span><span class="dna-label">Fotosíntesis</span></button>
+          <button class="dna-node left" data-topic="Respiración Celular" onclick="selectTopic(this)"><span class="dna-dot"></span><span class="dna-label">Respiración Celular</span></button>
+          <button class="dna-node right" data-topic="Ciclo Celular" onclick="selectTopic(this)"><span class="dna-dot"></span><span class="dna-label">Ciclo Celular</span></button>
+          <button class="dna-node left" data-topic="Genética" onclick="selectTopic(this)"><span class="dna-dot"></span><span class="dna-label">Genética</span></button>
+          <button class="dna-node right" data-topic="Taxonomía y Bacterias" onclick="selectTopic(this)"><span class="dna-dot"></span><span class="dna-label">Taxonomía y Bacterias</span></button>
+          <button class="dna-node left" data-topic="Reino Protista" onclick="selectTopic(this)"><span class="dna-dot"></span><span class="dna-label">Reino Protista</span></button>
+          <button class="dna-node right" data-topic="Reino Fungi" onclick="selectTopic(this)"><span class="dna-dot"></span><span class="dna-label">Reino Fungi</span></button>
+          <button class="dna-node left" data-topic="Reino Plantae" onclick="selectTopic(this)"><span class="dna-dot"></span><span class="dna-label">Reino Plantae</span></button>
+          <button class="dna-node right" data-topic="Tejidos Vegetales" onclick="selectTopic(this)"><span class="dna-dot"></span><span class="dna-label">Tejidos Vegetales</span></button>
+          <button class="dna-node left" data-topic="Hormonas Vegetales" onclick="selectTopic(this)"><span class="dna-dot"></span><span class="dna-label">Hormonas Vegetales</span></button>
+          <button class="dna-node right" data-topic="Reino Animalia" onclick="selectTopic(this)"><span class="dna-dot"></span><span class="dna-label">Reino Animalia</span></button>
+          <button class="dna-node left" data-topic="La Reproducción de los Seres Vivos" onclick="selectTopic(this)"><span class="dna-dot"></span><span class="dna-label">La Reproducción de los Seres Vivos</span></button>
+          <button class="dna-node right" data-topic="Ecología I" onclick="selectTopic(this)"><span class="dna-dot"></span><span class="dna-label">Ecología I</span></button>
+          <button class="dna-node left" data-topic="Ecología II" onclick="selectTopic(this)"><span class="dna-dot"></span><span class="dna-label">Ecología II</span></button>
+          <button class="dna-node right" data-topic="Origen de la Vida" onclick="selectTopic(this)"><span class="dna-dot"></span><span class="dna-label">Origen de la Vida</span></button>
+          <button class="dna-node left" data-topic="Evolución Biológica" onclick="selectTopic(this)"><span class="dna-dot"></span><span class="dna-label">Evolución Biológica</span></button>
+          <button class="dna-node right" data-topic="Dogma de la Biología Molecular" onclick="selectTopic(this)"><span class="dna-dot"></span><span class="dna-label">Dogma de la Biología Molecular</span></button>
+        </div>
+      </div>
+
+      <button class="back-link" onclick="goTo('screen-cursos')">← Volver a cursos</button>
+    </div>
+  </section>
+
 </div>
 
 <script>
   function goTo(id){
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     document.getElementById(id).classList.add('active');
+  }
+
+  function selectTopic(el){
+    const topic = el.getAttribute('data-topic');
+    document.querySelectorAll('.dna-node').forEach(n => n.classList.remove('is-selected'));
+    el.classList.add('is-selected');
+    const chip = document.getElementById('topic-chip');
+    const label = document.getElementById('bio-topic-label');
+    if(label) label.textContent = topic;
+    if(chip) chip.classList.add('show');
+    goTo('screen-biologia');
   }
 
   function startTransition(){
