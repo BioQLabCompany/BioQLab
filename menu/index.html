@@ -295,36 +295,38 @@ body.dark-mode .menu-wrap{
 
 .menu-option:hover .arrow{transform:translateX(5px)}
 
-.back-link{
-  display:block;
-  width:fit-content;
-  margin:22px 0 0;
-  padding:8px 2px;
-  border:0;
-  background:transparent;
-  color:var(--ui-muted);
-  font-family:inherit;
-  font-size:14px;
-  font-weight:600;
-  cursor:pointer;
-  text-decoration:none;
-  transition:color .2s ease,transform .2s ease;
-}
+  .back-link{
+    position:fixed;
+    top:20px;
+    left:24px;
+    z-index:100;
+    display:inline-flex;
+    align-items:center;
+    gap:7px;
+    min-height:44px;
+    padding:0 16px;
+    border-radius:999px;
+    border:1px solid var(--card-border);
+    background:rgba(255,255,255,.08);
+    color:var(--title-color);
+    font:700 13px "Segoe UI","Trebuchet MS",Arial,sans-serif;
+    text-decoration:none;
+    cursor:pointer;
+    box-shadow:0 8px 25px rgba(0,0,0,.12);
+    backdrop-filter:blur(12px);
+    -webkit-backdrop-filter:blur(12px);
+    transition:transform .2s ease,background .2s ease,border-color .2s ease;
+  }
 
-.back-link:hover{
-  color:var(--title-color);
-  transform:translateX(-3px);
-}
-
-.back-link:focus-visible{
-  outline:2px solid var(--leaf);
-  outline-offset:4px;
-  border-radius:4px;
-}
+  .back-link:hover{
+    transform:translateX(-3px);
+    background:rgba(255,255,255,.14);
+  }
 
 @media(max-width:700px){
   .screen{padding:20px 16px;min-height:100svh}
   .theme-toggle{top:14px;right:14px}
+  .back-link{top:14px;left:14px;min-height:42px;padding:0 14px}
   .menu-wrap{
     width:100%;
     max-width:560px;
@@ -392,16 +394,11 @@ body.dark-mode .menu-wrap{
           <span class="arrow">→</span>
         </button>
 
-      <button class="back-link" type="button" onclick="goHome()">← Volver al inicio</button>
     </div>
+    <a class="back-link" href="https://bioqlab.site" aria-label="Volver al menú">← Volver</a>
   </section>
 </div>
 <script>
-
-function goHome(){
-  // Volver siempre al menú principal, sin recargar la página actual.
-  window.location.href = 'https://bioqlab.site';
-}
 
 function toggleTheme(){
   document.body.classList.toggle('dark-mode');
