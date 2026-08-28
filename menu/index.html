@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Menú — BioQlab</title>
+<style>
+
+:root{
+  --surface:#F4F0E1;
+  --surface-line:#DDE1E6;
+  --surface-card:#fff;
+  --title-color:#25262c;
+  --sub-color:#5C6653;
+  --card-border:#DDE1E6;
+  --ink:#1B1E26;
+  --leaf:#4C6A8C;
+  --leaf-soft:#7F94AE;
+  --forest:#25262c;
+  --forest-deep:#18191e;
+  --amber:#D9A23F;
+  --ui-muted:#5C6653;
+}
+
+body.dark-mode{
+  --surface:#18191e;
+  --surface-line:#25262c;
+  --surface-card:#202127;
+  --title-color:#E4E6EA;
+  --sub-color:#9AA0AE;
+  --card-border:#2D3038;
+  --ink:#E7EEE2;
+  --ui-muted:#9aa0ac;
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+
+html,body{
+  width:100%;
+  height:100%;
+  overflow:hidden;
+  font-family:"Trebuchet MS","Segoe UI",Arial,sans-serif;
+  background:var(--surface);
+  color:var(--ink);
+}
+
+#app{
+  position:relative;
+  width:100%;
+  height:100vh;
+  min-height:520px;
+}
+
+.screen{
+  position:absolute;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  overflow:hidden;
+  background:var(--surface);
+  transition:background-color .3s ease;
+}
+
+.screen::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background:
+    radial-gradient(circle at 50% 40%,rgba(100,110,140,.055),transparent 34%),
+    linear-gradient(135deg,rgba(255,255,255,.018) 1px,transparent 1px);
+  background-size:auto,34px 34px;
+  mask-image:linear-gradient(to bottom,black,transparent 90%);
+}
+
+.theme-toggle{
+  position:absolute;
+  top:20px;
+  right:20px;
+  z-index:50;
+  width:42px;
+  height:42px;
+  border:1px solid var(--card-border);
+  border-radius:50%;
+  background:rgba(0,0,0,.05);
+  color:var(--title-color);
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  backdrop-filter:blur(12px);
+  box-shadow:0 8px 25px rgba(0,0,0,.2);
+  transition:transform .2s ease,border-color .2s ease,background .2s ease;
+}
+
+.theme-toggle:hover{
+  transform:rotate(12deg) scale(1.06);
+  border-color:rgba(110,130,170,.35);
+  background:rgba(120,135,180,.12);
+}
+
+.theme-toggle svg{width:21px;height:21px;display:block}
+.theme-toggle .icon-moon{display:none}
+body.dark-mode .theme-toggle .icon-sun{display:none}
+body.dark-mode .theme-toggle .icon-moon{display:block}
+body.dark-mode .theme-toggle{
+  color:#f4f7f5;
+  border-color:rgba(255,255,255,.25);
+  background:rgba(255,255,255,.08);
+}
+
+.cell-field{
+  position:absolute;
+  inset:0;
+  z-index:0;
+  overflow:hidden;
+  pointer-events:none;
+  opacity:.72;
+}
+
+.cell{
+  position:absolute;
+  border-radius:50% / 45%;
+  filter:blur(7px);
+  background:
+    radial-gradient(ellipse at 32% 28%,
+      rgba(200,205,220,.95) 0%,
+      rgba(120,135,180,.75) 30%,
+      rgba(60,80,115,.55) 58%,
+      rgba(24,25,30,0) 80%);
+  box-shadow:0 0 26px rgba(120,135,180,.30);
+  opacity:.6;
+  animation-timing-function:ease-in-out;
+  animation-iteration-count:infinite;
+}
+
+.cell.round{border-radius:50%}
+.cell.light{
+  filter:blur(9px);
+  background:
+    radial-gradient(ellipse at 32% 28%,
+      rgba(60,70,95,.55) 0%,
+      rgba(60,70,95,.30) 45%,
+      rgba(60,70,95,0) 78%);
+  box-shadow:none;
+  opacity:.35;
+}
+
+@keyframes driftA{
+  0%{transform:translate(0,0) rotate(var(--rot,0deg));opacity:.15}
+  12%{opacity:.6}
+  50%{transform:translate(6vw,-5vh) rotate(calc(var(--rot,0deg) + 14deg));opacity:.55}
+  88%{opacity:.6}
+  100%{transform:translate(0,0) rotate(var(--rot,0deg));opacity:.15}
+}
+@keyframes driftB{
+  0%{transform:translate(0,0) rotate(var(--rot,0deg));opacity:.15}
+  15%{opacity:.55}
+  50%{transform:translate(-7vw,6vh) rotate(calc(var(--rot,0deg) - 18deg));opacity:.5}
+  85%{opacity:.55}
+  100%{transform:translate(0,0) rotate(var(--rot,0deg));opacity:.15}
+}
+@keyframes driftC{
+  0%{transform:translate(0,0) rotate(var(--rot,0deg));opacity:.12}
+  18%{opacity:.5}
+  50%{transform:translate(4vw,7vh) rotate(calc(var(--rot,0deg) + 24deg));opacity:.45}
+  82%{opacity:.5}
+  100%{transform:translate(0,0) rotate(var(--rot,0deg));opacity:.12}
+}
+@keyframes driftD{
+  0%{transform:translate(0,0) rotate(var(--rot,0deg));opacity:.14}
+  20%{opacity:.5}
+  50%{transform:translate(-5vw,-6vh) rotate(calc(var(--rot,0deg) - 10deg));opacity:.5}
+  80%{opacity:.5}
+  100%{transform:translate(0,0) rotate(var(--rot,0deg));opacity:.14}
+}
+
+.menu-wrap{
+  position:relative;
+  z-index:2;
+  width:min(92%,500px);
+  padding:46px 42px;
+  border:1px solid rgba(60,70,95,.28);
+  border-radius:22px;
+  background:linear-gradient(145deg,rgba(255,255,255,.08),rgba(255,255,255,.025));
+  box-shadow:0 24px 70px rgba(0,0,0,.18);
+  backdrop-filter:blur(18px);
+  -webkit-backdrop-filter:blur(18px);
+}
+
+body.dark-mode .menu-wrap{
+  border-color:rgba(255,255,255,.09);
+  background:linear-gradient(145deg,rgba(34,34,46,.82),rgba(20,21,26,.72));
+  box-shadow:0 24px 70px rgba(0,0,0,.34);
+}
+
+.menu-wrap::before{
+  content:"";
+  position:absolute;
+  top:0;
+  left:26px;
+  right:26px;
+  height:2px;
+  background:linear-gradient(90deg,transparent,var(--leaf),transparent);
+  opacity:.5;
+}
+
+.menu-eyebrow{
+  font-size:11px;
+  letter-spacing:.34em;
+  text-transform:uppercase;
+  color:var(--ui-muted);
+  font-weight:700;
+  margin-bottom:10px;
+}
+
+.menu-title{
+  font-size:42px;
+  font-weight:800;
+  letter-spacing:-.045em;
+  color:var(--title-color);
+  margin-bottom:6px;
+}
+
+.menu-sub{
+  color:var(--ui-muted);
+  font-size:15px;
+  margin:0 0 34px;
+  line-height:1.5;
+}
+
+.menu-option{
+  position:relative;
+  overflow:hidden;
+  display:flex;
+  align-items:center;
+  gap:16px;
+  width:100%;
+  margin-bottom:16px;
+  background:var(--forest);
+  color:#f4f7f5;
+  border:1px solid rgba(255,255,255,.07);
+  padding:20px 24px;
+  font-family:inherit;
+  font-size:19px;
+  letter-spacing:.01em;
+  cursor:pointer;
+  border-radius:13px;
+  box-shadow:0 10px 25px rgba(0,0,0,.12);
+  transition:transform .25s ease,border-color .25s ease,background .25s ease,box-shadow .25s ease;
+}
+
+.menu-option::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:linear-gradient(100deg,transparent,rgba(120,135,180,.08),transparent);
+  transform:translateX(-100%);
+  transition:transform .55s ease;
+}
+
+.menu-option:hover{
+  transform:translateY(-3px);
+  border-color:rgba(110,130,170,.35);
+  background:#202127;
+  box-shadow:0 15px 34px rgba(0,0,0,.2);
+}
+
+.menu-option:hover::before{transform:translateX(100%)}
+
+.menu-option-icon{font-size:24px;line-height:1;flex:0 0 auto}
+
+.menu-option-text{
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+  flex:1 1 auto;
+  text-align:left;
+}
+
+.menu-option-text strong{font-weight:700}
+.menu-option-text small{
+  color:#b8c2dd;
+  font-size:12.5px;
+  margin-top:2px;
+}
+
+.menu-option .arrow{
+  font-size:18px;
+  color:#b8c2dd;
+  flex:0 0 auto;
+  transition:transform .25s ease;
+}
+
+.menu-option:hover .arrow{transform:translateX(5px)}
+
+.back-link{
+  display:block;
+  width:fit-content;
+  margin:22px 0 0;
+  padding:8px 2px;
+  border:0;
+  background:transparent;
+  color:var(--ui-muted);
+  font-family:inherit;
+  font-size:14px;
+  font-weight:600;
+  cursor:pointer;
+  text-decoration:none;
+  transition:color .2s ease,transform .2s ease;
+}
+
+.back-link:hover{
+  color:var(--title-color);
+  transform:translateX(-3px);
+}
+
+.back-link:focus-visible{
+  outline:2px solid var(--leaf);
+  outline-offset:4px;
+  border-radius:4px;
+}
+
+@media(max-width:700px){
+  .screen{padding:20px 16px;min-height:100svh}
+  .theme-toggle{top:14px;right:14px}
+  .menu-wrap{
+    width:100%;
+    max-width:560px;
+    padding:34px 24px;
+    border-radius:18px;
+  }
+  .menu-title{font-size:clamp(46px,15vw,72px);line-height:1}
+  .menu-sub{font-size:15px;max-width:320px}
+  .menu-option{min-height:76px;font-size:17px;padding:18px 20px}
+}
+@media(max-width:390px){
+  .screen{padding-left:13px;padding-right:13px}
+  .menu-wrap{padding:30px 18px}
+  .menu-title{font-size:50px}
+  .menu-eyebrow{font-size:12px;letter-spacing:.28em}
+  .menu-sub{font-size:14px}
+}
+
+</style>
+  <link rel="icon" type="image/png" href="./favicon.png">
+</head>
+<body>
+<div id="app">
+<section id="screen-menu" class="screen active">
+    <button class="theme-toggle" onclick="toggleTheme()" title="Cambiar tema"><svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <circle cx="12" cy="12" r="5"></circle>
+  <line x1="12" y1="1" x2="12" y2="3"></line>
+  <line x1="12" y1="21" x2="12" y2="23"></line>
+  <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+  <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+  <line x1="1" y1="12" x2="3" y2="12"></line>
+  <line x1="21" y1="12" x2="23" y2="12"></line>
+  <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+  <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+</svg>
+<svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+</svg></button>
+    <div class="cell-field">
+      <div class="cell light" style="top:10%; left:75%; width:130px; height:38px; --rot:-20deg; animation-name:driftA; animation-duration:34s; animation-delay:-4s;"></div>
+      <div class="cell light round" style="top:70%; left:8%; width:26px; height:26px; animation-name:driftC; animation-duration:26s; animation-delay:-9s;"></div>
+      <div class="cell light" style="top:82%; left:60%; width:100px; height:30px; --rot:16deg; animation-name:driftD; animation-duration:30s; animation-delay:-14s;"></div>
+      <div class="cell light" style="top:30%; left:4%; width:80px; height:24px; --rot:30deg; animation-name:driftB; animation-duration:28s; animation-delay:-2s;"></div>
+    </div>
+    <div class="menu-wrap">
+      <div class="menu-eyebrow">Panel principal</div>
+      <h1 class="menu-title">Menú</h1>
+      <p class="menu-sub">Elige por dónde quieres continuar.</p>
+
+      <button class="menu-option" onclick="window.location.href='https://bioqlab.site/menu/cursos'">
+        <span class="menu-option-icon"></span>
+        <span class="menu-option-text">
+          <strong>Cursos</strong>
+          <small>Explora el contenido disponible</small>
+        </span>
+        <span class="arrow">→</span>
+      </button>
+
+        <button class="menu-option" onclick="window.location.href='https://bioqlab.site/menu/extras'">
+          <span class="menu-option-icon"></span>
+          <span class="menu-option-text">
+            <strong>Extras</strong>
+            <small>Aqui encontraras algunas cosas interesante</small>
+          </span>
+          <span class="arrow">→</span>
+        </button>
+
+      <button class="back-link" type="button" onclick="goHome()">← Volver al inicio</button>
+    </div>
+  </section>
+</div>
+<script>
+
+function goHome(){
+  // Volver siempre al menú principal, sin recargar la página actual.
+  window.location.href = 'https://bioqlab.site/menu';
+}
+
+function toggleTheme(){
+  document.body.classList.toggle('dark-mode');
+  localStorage.setItem('bioqlab-theme',
+    document.body.classList.contains('dark-mode') ? 'dark' : 'light');
+  syncThemeIcons();
+}
+
+function syncThemeIcons(){
+  const dark = document.body.classList.contains('dark-mode');
+  document.querySelectorAll('.theme-toggle').forEach(btn=>{
+    btn.setAttribute('aria-label', dark ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro');
+    btn.setAttribute('title', dark ? 'Modo claro' : 'Modo oscuro');
+  });
+}
+
+(function initTheme(){
+  const saved = localStorage.getItem('bioqlab-theme');
+  const prefersDark = window.matchMedia &&
+    window.matchMedia('(prefers-color-scheme: dark)').matches;
+  document.body.classList.toggle('dark-mode', saved ? saved === 'dark' : prefersDark);
+  syncThemeIcons();
+})();
+
+</script>
+</body>
+</html>
