@@ -2251,6 +2251,15 @@ ge8VxiOyBssCxDmSFYW2upVSIxNaAibs863ePOolF7yQRfUKU5ZnlIIiypCdVkOqI6LNfmtu7a+ftHtk
     if(!el) return;
     const topic = el.getAttribute('data-topic');
     if(!topic) return;
+
+    // "Bioelementos y Agua" ahora vive en la web externa: redirigimos
+    // directamente y no continuamos con el flujo interno (pantalla de
+    // niveles, banco de preguntas, etc.), ya que dejó de tener sentido.
+    if(topic === 'Bioelementos y Agua'){
+      window.location.href = 'https://bioqlab.site/menu/cursos/biologia/bioelementos';
+      return;
+    }
+
     window.selectedBioTopic = topic;
 
     goTo('screen-biologia');
