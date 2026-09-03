@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Biología — BioQlab</title>
+<style>
+  :root{
+    --ui-bg:#18191e;
+    --ui-text:#f4f7f5;
+    --ui-muted:#9baea7;
+    --ui-border:rgba(255,255,255,.09);
+    --card-grad:linear-gradient(145deg,rgba(34,34,46,.84),rgba(20,21,26,.78));
+    --option-bg:rgba(255,255,255,.045);
+    --option-border:rgba(255,255,255,.08);
+    --back-bg:rgba(65,66,75,.72);
+    --back-bg-hover:rgba(78,79,88,.86);
+  }
+
+  body.light-mode{
+    --ui-bg:#F4F0E1;
+    --ui-text:#1B1E26;
+    --ui-muted:#5C6653;
+    --ui-border:#DDE1E6;
+    --card-grad:linear-gradient(145deg,#ffffff,#f6f4ea);
+    --option-bg:rgba(0,0,0,.03);
+    --option-border:rgba(0,0,0,.08);
+    --back-bg:rgba(255,255,255,.75);
+    --back-bg-hover:rgba(255,255,255,.95);
+  }
+
+  *{box-sizing:border-box; margin:0; padding:0;}
+
+  html,body{
+    height:100%;
+    background: var(--ui-bg);
+    color: var(--ui-text);
+    font-family:"Segoe UI","Trebuchet MS",Arial,sans-serif;
+    transition:background .25s ease, color .25s ease;
+  }
+
+  body{
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    overflow-x:hidden;
+    position:relative;
+  }
+
+  /* Textura ambiental muy sutil, igual que el resto del portal */
+  body::before{
+    content:"";
+    position:fixed;
+    inset:0;
+    pointer-events:none;
+    z-index:0;
+    background:
+      radial-gradient(circle at 50% 40%, rgba(100,110,140,.06), transparent 34%),
+      linear-gradient(135deg, rgba(255,255,255,.018) 1px, transparent 1px);
+    background-size:auto, 34px 34px;
+    mask-image:linear-gradient(to bottom, black, transparent 90%);
+  }
+
+  .bio-back-button{
+    position:fixed; top:20px; left:20px; z-index:1000;
+    min-width:87px; height:44px; display:flex; align-items:center; justify-content:center; gap:5px;
+    padding:0 16px; border:1px solid rgba(255,255,255,.14); border-radius:999px;
+    background:var(--back-bg); color:var(--ui-text); text-decoration:none;
+    font-size:13px; font-weight:700;
+    cursor:pointer; backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px);
+    box-shadow:0 8px 25px rgba(0,0,0,.18);
+    transition:transform .2s ease,border-color .2s ease,background .2s ease;
+  }
+  .bio-back-button{ background:var(--back-bg); }
+  .bio-back-button:hover{ transform:translateY(-2px); border-color:rgba(255,255,255,.22); background:var(--back-bg-hover); }
+  .bio-back-button:active{transform:translateY(0);}
+
+  .theme-toggle{
+    position:fixed;
+    top:20px;
+    right:20px;
+    z-index:1000;
+    width:42px;
+    height:42px;
+    border:1px solid var(--ui-border);
+    border-radius:50%;
+    background:var(--back-bg);
+    color:var(--ui-text);
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    backdrop-filter:blur(12px);
+    -webkit-backdrop-filter:blur(12px);
+    box-shadow:0 8px 25px rgba(0,0,0,.18);
+    transition:transform .2s ease,border-color .2s ease,background .2s ease;
+  }
+  .theme-toggle:hover{
+    transform:rotate(12deg) scale(1.06);
+    background:var(--back-bg-hover);
+  }
+  .theme-toggle svg{ width:20px; height:20px; display:block; }
+  .theme-toggle .icon-moon{ display:none; }
+  body.light-mode .theme-toggle .icon-sun{ display:none; }
+  body.light-mode .theme-toggle .icon-moon{ display:block; }
+
+  .learning-wrap{
+    position:relative;
+    z-index:2;
+    width:min(92%,620px);
+    padding:48px;
+    border:1px solid var(--ui-border);
+    border-radius:22px;
+    background:var(--card-grad);
+    box-shadow:0 24px 70px rgba(0,0,0,.34);
+    backdrop-filter:blur(18px);
+    -webkit-backdrop-filter:blur(18px);
+    animation:fadeIn .65s cubic-bezier(.2,.8,.2,1) both;
+  }
+
+  .menu-eyebrow{
+    font-size:13px;
+    font-weight:700;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:#8f9fca;
+    margin-bottom:6px;
+  }
+
+  .learning-title{
+    margin:8px 0 10px;
+    font-size:clamp(32px,5vw,46px);
+    line-height:1.05;
+    letter-spacing:-.045em;
+    color:var(--ui-text);
+    font-weight:800;
+  }
+
+  .learning-sub{
+    margin:0 0 30px;
+    color:var(--ui-muted);
+    font-size:15px;
+  }
+
+  .learning-options{
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+  }
+
+  .learning-option{
+    width:100%;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    text-align:left;
+    padding:20px 22px;
+    border:1px solid var(--option-border);
+    border-radius:14px;
+    background:var(--option-bg);
+    color:var(--ui-text);
+    text-decoration:none;
+    cursor:pointer;
+    transition:transform .23s ease,border-color .23s ease,
+               background .23s ease,box-shadow .23s ease;
+  }
+
+  .learning-option:hover{
+    transform:translateY(-3px);
+    border-color:rgba(120,135,180,.38);
+    background:rgba(120,135,180,.08);
+    box-shadow:0 14px 30px rgba(0,0,0,.2);
+  }
+
+  .learning-option strong{
+    display:block;
+    font-size:19px;
+    font-weight:750;
+    margin-bottom:4px;
+  }
+
+  .learning-option small{
+    display:block;
+    color:var(--ui-muted);
+    font-size:13px;
+  }
+
+  .learning-arrow{
+    font-size:22px;
+    color:#b8ddb8;
+    transition:transform .2s ease;
+  }
+
+  .learning-option:hover .learning-arrow{
+    transform:translateX(5px);
+  }
+
+  @keyframes fadeIn{
+    from{opacity:0; transform:translateY(14px);}
+    to{opacity:1; transform:translateY(0);}
+  }
+
+  @media(max-width:600px){
+    .learning-wrap{
+      width:calc(100% - 32px);
+      padding:32px 22px;
+    }
+  }
+</style>
+
+<style>
+/* =========================================================
+   CUADRO CENTRAL — modo claro con el mismo aspecto de
+   comenzar - copia(3).html. Solo afecta este cuadro.
+   ========================================================= */
+body.light-mode .learning-wrap{
+  position:relative;
+  z-index:2;
+  width:min(92%,620px);
+  padding:48px;
+  border:1px solid rgba(255,255,255,.09);
+  border-radius:22px;
+  background:linear-gradient(145deg,rgba(34,34,46,.84),rgba(20,21,26,.78));
+  box-shadow:0 24px 70px rgba(0,0,0,.34);
+  backdrop-filter:blur(18px);
+  -webkit-backdrop-filter:blur(18px);
+}
+
+body.light-mode .learning-wrap .menu-eyebrow{
+  color:#8f9fca;
+}
+
+body.light-mode .learning-wrap .learning-title{
+  margin:8px 0 10px;
+  font-family:"Segoe UI","Trebuchet MS",Arial,sans-serif;
+  font-size:clamp(32px,5vw,46px);
+  line-height:1.05;
+  letter-spacing:-.045em;
+  color:#f4f7f5;
+  font-weight:800;
+}
+
+body.light-mode .learning-wrap .learning-sub{
+  margin:0 0 30px;
+  color:#9baea7;
+  font-size:15px;
+}
+
+body.light-mode .learning-wrap .learning-options{
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+
+body.light-mode .learning-wrap .learning-option{
+  width:100%;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  text-align:left;
+  padding:20px 22px;
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:14px;
+  background:rgba(255,255,255,.045);
+  color:#f4f7f5;
+  cursor:pointer;
+  transition:transform .23s ease,border-color .23s ease,
+             background .23s ease,box-shadow .23s ease;
+}
+
+body.light-mode .learning-wrap .learning-option:hover{
+  transform:translateY(-3px);
+  border-color:rgba(120,135,180,.38);
+  background:rgba(120,135,180,.08);
+  box-shadow:0 14px 30px rgba(0,0,0,.2);
+}
+
+body.light-mode .learning-wrap .learning-option strong{
+  display:block;
+  font-family:"Segoe UI","Trebuchet MS",Arial,sans-serif;
+  font-size:19px;
+  font-weight:750;
+  margin-bottom:4px;
+  color:#f4f7f5;
+}
+
+body.light-mode .learning-wrap .learning-option small{
+  display:block;
+  color:#9baea7;
+  font-size:13px;
+}
+
+body.light-mode .learning-wrap .learning-arrow{
+  font-size:22px;
+  color:#b8ddb8;
+  transition:transform .2s ease;
+}
+
+body.light-mode .learning-wrap .learning-option:hover .learning-arrow{
+  transform:translateX(5px);
+}
+
+body.light-mode .learning-wrap .back-link{
+  color:#9baea7;
+}
+
+body.light-mode .learning-wrap .back-link:hover{
+  color:#f4f7f5;
+}
+</style>
+
+</head>
+<body>
+<a class="bio-back-button" href="https://bioqlab.site/menu/cursos/">← Volver</a>
+<button class="theme-toggle" onclick="toggleTheme()" title="Cambiar tema">
+  <svg class="icon-sun" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24">
+    <circle cx="12" cy="12" r="5"></circle>
+    <line x1="12" x2="12" y1="1" y2="3"></line>
+    <line x1="12" x2="12" y1="21" y2="23"></line>
+    <line x1="4.22" x2="5.64" y1="4.22" y2="5.64"></line>
+    <line x1="18.36" x2="19.78" y1="18.36" y2="19.78"></line>
+    <line x1="1" x2="3" y1="12" y2="12"></line>
+    <line x1="21" x2="23" y1="12" y2="12"></line>
+    <line x1="4.22" x2="5.64" y1="19.78" y2="18.36"></line>
+    <line x1="18.36" x2="19.78" y1="5.64" y2="4.22"></line>
+  </svg>
+  <svg class="icon-moon" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24">
+    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+  </svg>
+</button>
+
+<div class="learning-wrap">
+  <div class="menu-eyebrow">Biología</div>
+  <h2 class="learning-title">¿Qué te interesa aprender?</h2>
+  <p class="learning-sub">Elige una forma de explorar el contenido.</p>
+  <div class="learning-options">
+    <a class="learning-option" href="https://bioqlab.site/menu/cursos/biologia/seleccion/preguntas">
+      <span>
+        <strong>Preguntas</strong>
+        <small>Pon a prueba lo que sabes</small>
+      </span>
+      <span class="learning-arrow">→</span>
+    </a>
+    <a class="learning-option" href="https://bioqlab.site/menu/cursos/biologia/seleccion/diapositivas">
+      <span>
+        <strong>Diapositivas</strong>
+        <small>Aprende paso a paso</small>
+      </span>
+      <span class="learning-arrow">→</span>
+    </a>
+    <a class="learning-option" href="https://bioqlab.site/menu/cursos/biologia/seleccion/flashcards">
+      <span>
+        <strong>Flashcards</strong>
+        <small>Una opcion extra para practicar</small>
+      </span>
+      <span class="learning-arrow">→</span>
+    </a>
+  </div>
+</div>
+<script>
+  function toggleTheme(){
+    document.body.classList.toggle('light-mode');
+  }
+</script>
+</body>
+</html>
