@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Flashcards — Bioelementos y Agua | BioQlab</title>
+<style>
+  :root{
+    --forest: #25262c;
+    --forest-deep: #18191e;
+    --agar: #F4F0E1;
+    --agar-line: #DDE1E6;
+    --leaf: #4C6A8C;
+    --leaf-dark: #2E3F56;
+    --leaf-soft: #7F94AE;
+    --mate: #2C6E7A;
+    --mate-dark: #1E4C55;
+    --otros: #8B8D93;
+    --amber: #D9A23F;
+    --ink: #1B1E26;
+    --sage: #C7CCD7;
+
+    --surface: var(--agar);
+    --surface-line: var(--agar-line);
+    --surface-card: #fff;
+    --title-color: var(--forest);
+    --sub-color: #5C6653;
+    --card-border: var(--agar-line);
+    --text-color: var(--ink);
+    --hover-bg: rgba(120,135,180,0.12);
+    --correct: #4CAF50;
+  }
+
+  body.dark-mode{
+    --surface: #111318;
+    --surface-line: #292d35;
+    --surface-card: #1b1e24;
+    --title-color: #f1f3f5;
+    --sub-color: #aeb5c0;
+    --card-border: #343943;
+    --text-color: #e8ebef;
+    --hover-bg: rgba(255,255,255,.08);
+    color-scheme: dark;
+  }
+
+  *{box-sizing:border-box;}
+
+  body{
+    margin:0;
+    min-height:100vh;
+    background: var(--surface);
+    color: var(--text-color);
+    font-family: 'Georgia', 'Iowan Old Style', serif;
+    transition: background .3s ease, color .3s ease;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    padding: 28px 16px 60px;
+  }
+
+  .theme-toggle{
+    position:fixed;
+    top:18px;
+    right:18px;
+    z-index:20;
+    width:42px;
+    height:42px;
+    border-radius:50%;
+    border:1px solid var(--card-border);
+    background: var(--surface-card);
+    color: var(--title-color);
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    transition: transform .15s ease;
+  }
+  .theme-toggle:hover{ transform: scale(1.06); }
+  .theme-toggle svg{ width:20px; height:20px; display:block; }
+  .theme-toggle .icon-moon{ display:none; }
+  body.dark-mode .theme-toggle .icon-sun{ display:none; }
+  body.dark-mode .theme-toggle .icon-moon{ display:block; }
+
+  header{
+    width:100%;
+    max-width:720px;
+    text-align:center;
+    margin-bottom: 22px;
+  }
+
+  .eyebrow{
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 12.5px;
+    letter-spacing: .04em;
+    color: var(--mate);
+    margin: 0 0 6px;
+  }
+
+  h1{
+    font-size: clamp(26px, 5vw, 36px);
+    margin: 0 0 8px;
+    color: var(--title-color);
+    font-weight: 600;
+  }
+
+  .sub{
+    color: var(--sub-color);
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 14.5px;
+    margin: 0;
+  }
+
+  .filters{
+    width:100%;
+    max-width: 720px;
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    justify-content:center;
+    margin: 18px 0 8px;
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+  }
+
+  .chip{
+    border: 1px solid var(--card-border);
+    background: var(--surface-card);
+    color: var(--sub-color);
+    padding: 7px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all .15s ease;
+  }
+  .chip:hover{ background: var(--hover-bg); }
+  .chip.active{
+    background: var(--leaf);
+    border-color: var(--leaf);
+    color: #fff;
+  }
+
+  .progress-wrap{
+    width: 100%;
+    max-width: 560px;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin: 14px 0 26px;
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    color: var(--sub-color);
+    font-size: 13px;
+  }
+  .progress-bar{
+    flex:1;
+    height:5px;
+    border-radius:3px;
+    background: var(--surface-line);
+    overflow:hidden;
+  }
+  .progress-fill{
+    height:100%;
+    width:0%;
+    background: linear-gradient(90deg, var(--mate), var(--leaf));
+    transition: width .25s ease;
+  }
+
+  .stage{
+    width:100%;
+    max-width: 560px;
+    perspective: 1600px;
+  }
+
+  .card{
+    position:relative;
+    width:100%;
+    height: 340px;
+    cursor:pointer;
+  }
+
+  .card-inner{
+    position:absolute;
+    inset:0;
+    transition: transform .55s cubic-bezier(.4,.2,.2,1);
+    transform-style: preserve-3d;
+  }
+  .card.flipped .card-inner{
+    transform: rotateY(180deg);
+  }
+
+  .face{
+    position:absolute;
+    inset:0;
+    backface-visibility:hidden;
+    border-radius: 16px;
+    border: 1px solid var(--card-border);
+    background: var(--surface-card);
+    padding: 30px 28px;
+    display:flex;
+    flex-direction:column;
+    box-shadow: 0 10px 26px rgba(0,0,0,0.08);
+    transition: background .3s ease, border-color .3s ease, box-shadow .3s ease;
+  }
+
+  .face .tag{
+    align-self:flex-start;
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 11.5px;
+    letter-spacing: .03em;
+    color: #fff;
+    background: var(--mate);
+    padding: 4px 11px;
+    border-radius: 12px;
+    margin-bottom: 18px;
+  }
+  .face.back .tag{ background: var(--leaf); }
+
+  .face .content{
+    flex:1;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+  }
+
+  .face.front .content{
+    font-size: clamp(19px, 3.4vw, 24px);
+    line-height: 1.4;
+    color: var(--title-color);
+    font-weight: 600;
+  }
+
+  .face.back .content{
+    font-size: 16.5px;
+    line-height: 1.55;
+    color: var(--text-color);
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+  }
+
+  .face .hint{
+    text-align:center;
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 12px;
+    color: var(--sub-color);
+    letter-spacing: .02em;
+  }
+
+  .face.back{
+    transform: rotateY(180deg);
+  }
+
+  .controls{
+    width:100%;
+    max-width: 560px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap: 12px;
+    margin-top: 24px;
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+  }
+
+  .nav-btn, .shuffle-btn{
+    border: 1px solid var(--card-border);
+    background: var(--surface-card);
+    color: var(--title-color);
+    border-radius: 10px;
+    padding: 11px 16px;
+    font-size: 14px;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    gap:6px;
+    transition: background .15s ease;
+  }
+  .nav-btn:hover, .shuffle-btn:hover{ background: var(--hover-bg); }
+  .nav-btn:disabled{ opacity:.35; cursor:default; }
+
+  .nav-group{ display:flex; gap:8px; }
+
+  .counter{
+    font-size: 14px;
+    color: var(--sub-color);
+    min-width: 70px;
+    text-align:center;
+  }
+
+  .known-row{
+    width:100%;
+    max-width: 560px;
+    display:flex;
+    gap:10px;
+    margin-top: 14px;
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+  }
+  .known-row button{
+    flex:1;
+    padding: 12px;
+    border-radius: 10px;
+    border:1px solid var(--card-border);
+    cursor:pointer;
+    font-size: 13.5px;
+    background: var(--surface-card);
+    color: var(--sub-color);
+    transition: all .15s ease;
+  }
+  #btnKnown:hover{ border-color: var(--correct); color: var(--correct); }
+  #btnReview:hover{ border-color: var(--amber); color: var(--amber); }
+
+  footer{
+    margin-top: 40px;
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 12px;
+    color: var(--sub-color);
+    text-align:center;
+  }
+
+  @media (max-width: 480px){
+    .card{ height: 380px; }
+    .face{ padding: 24px 20px; }
+  }
+</style>
+</head>
+<body>
+
+<button class="theme-toggle" id="themeToggle" title="Cambiar tema"><svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg><svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg></button>
+
+<header>
+  <h1>Bioelementos y Agua</h1>
+  <p class="sub">Toca la carta para ver la respuesta. Usa las flechas del teclado para avanzar.</p>
+</header>
+
+<div class="filters" id="filters"></div>
+
+<div class="progress-wrap">
+  <span id="progressLabel">1 / 1</span>
+  <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+  <span id="knownLabel">0 dominadas</span>
+</div>
+
+<div class="stage">
+  <div class="card" id="card">
+    <div class="card-inner">
+      <div class="face front">
+        <span class="tag" id="tagFront">Bioelementos</span>
+        <div class="content" id="frontText">Cargando…</div>
+        <span class="hint">Toca para voltear</span>
+      </div>
+      <div class="face back">
+        <span class="tag" id="tagBack">Bioelementos</span>
+        <div class="content" id="backText"></div>
+        <span class="hint">Toca para volver</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="known-row">
+  <button id="btnReview">Repasar de nuevo</button>
+  <button id="btnKnown">Ya la domino</button>
+</div>
+
+<div class="controls">
+  <div class="nav-group">
+    <button class="nav-btn" id="prevBtn">Anterior</button>
+    <button class="nav-btn" id="nextBtn">Siguiente</button>
+  </div>
+  <span class="counter" id="counter"></span>
+  <button class="shuffle-btn" id="shuffleBtn">Mezclar</button>
+</div>
+
+<footer>Bioelementos primarios · secundarios · oligoelementos · propiedades del agua · sales minerales</footer>
+
+<script>
+  const CARDS = [
+    {cat:"Bioelementos", q:"¿Qué es un bioelemento?", a:"Es cada uno de los elementos químicos que forman parte de la materia viva. Se clasifican según su proporción en primarios, secundarios y oligoelementos (o elementos traza)."},
+    {cat:"Bioelementos", q:"¿Cuáles son los bioelementos primarios y qué porcentaje representan?", a:"Carbono (C), Hidrógeno (H), Oxígeno (O), Nitrógeno (N), Fósforo (P) y Azufre (S) — recordados con la sigla CHNOPS. Constituyen cerca del 96% de la masa de un ser vivo."},
+    {cat:"Bioelementos", q:"¿Por qué el carbono es el elemento central de la química de la vida?", a:"Porque forma 4 enlaces covalentes estables, puede unirse a otros átomos de carbono formando cadenas y anillos, y da lugar a una enorme variedad de moléculas orgánicas complejas y estables."},
+    {cat:"Bioelementos", q:"¿Qué son los bioelementos secundarios? Da ejemplos.", a:"Elementos presentes en menor proporción (alrededor del 3,3%) pero igualmente indispensables: Calcio (Ca), Sodio (Na), Potasio (K), Cloro (Cl), Magnesio (Mg) y Hierro (Fe)."},
+    {cat:"Bioelementos", q:"¿Qué función cumple el calcio (Ca) en el organismo?", a:"Forma parte de huesos y dientes, interviene en la coagulación sanguínea, la contracción muscular y la transmisión del impulso nervioso."},
+    {cat:"Bioelementos", q:"¿Qué papel cumplen el sodio (Na⁺) y el potasio (K⁺)?", a:"Son los principales responsables del potencial de membrana y de la transmisión del impulso nervioso; el Na⁺ predomina fuera de la célula y el K⁺ dentro de ella."},
+    {cat:"Bioelementos", q:"¿Qué es un oligoelemento?", a:"Un elemento que aparece en cantidades mínimas (menos del 0,1%) pero es esencial para procesos vitales, generalmente como cofactor de enzimas. Ejemplos: hierro, zinc, yodo, cobre, manganeso, flúor y cobalto."},
+    {cat:"Bioelementos", q:"¿Qué ocurre si falta yodo en la dieta?", a:"El yodo es indispensable para sintetizar las hormonas tiroideas (T3 y T4); su carencia provoca hipotiroidismo y bocio."},
+    {cat:"Bioelementos", q:"¿Qué diferencia hay entre bioelementos y biomoléculas?", a:"Los bioelementos son los átomos que componen la materia viva (C, H, O, N, etc.); las biomoléculas son las estructuras que se forman al combinarse esos átomos, como el agua, las sales, los glúcidos o las proteínas."},
+    {cat:"Bioelementos", q:"¿Cómo se clasifican las biomoléculas según su origen?", a:"En inorgánicas (agua y sales minerales, presentes también en la materia no viva) y orgánicas (glúcidos, lípidos, proteínas y ácidos nucleicos, exclusivas de los seres vivos y basadas en carbono)."},
+
+    {cat:"Agua", q:"¿Por qué el agua es una molécula polar?", a:"Porque el oxígeno atrae con más fuerza los electrones compartidos que el hidrógeno (mayor electronegatividad), generando una carga parcial negativa en el oxígeno y positiva en los hidrógenos."},
+    {cat:"Agua", q:"¿Qué es un puente o enlace de hidrógeno en el agua?", a:"Una atracción electrostática débil entre el hidrógeno con carga parcial positiva de una molécula de agua y el oxígeno con carga parcial negativa de otra molécula vecina."},
+    {cat:"Agua", q:"¿Qué es la cohesión del agua?", a:"La atracción entre moléculas de agua entre sí, mantenida por puentes de hidrógeno; explica la tensión superficial y permite el ascenso del agua por los vasos de las plantas."},
+    {cat:"Agua", q:"¿Qué es la adhesión del agua?", a:"La atracción entre las moléculas de agua y otras superficies o sustancias polares, responsable en parte de la capilaridad."},
+    {cat:"Agua", q:"¿Qué es la capilaridad?", a:"La capacidad del agua de ascender por tubos muy finos (capilares) gracias a la combinación de fuerzas de cohesión y adhesión."},
+    {cat:"Agua", q:"¿Por qué el agua tiene un calor específico elevado?", a:"Porque gran parte del calor aplicado se invierte en romper puentes de hidrógeno en lugar de aumentar la energía cinética, lo que hace que su temperatura cambie lentamente y ayuda a estabilizar la temperatura corporal."},
+    {cat:"Agua", q:"¿Qué es el calor de vaporización y qué función cumple?", a:"Es la cantidad de energía necesaria para evaporar el agua; al ser alto, permite que el sudor elimine mucho calor corporal al evaporarse, refrescando el organismo."},
+    {cat:"Agua", q:"¿Por qué el hielo flota en el agua líquida?", a:"Porque al congelarse, los puentes de hidrógeno forman una red cristalina abierta y ordenada que ocupa más volumen, haciendo que el hielo sea menos denso que el agua líquida."},
+    {cat:"Agua", q:"¿Por qué el agua es considerada el disolvente universal?", a:"Por su polaridad, es capaz de rodear y disolver iones y moléculas polares (como sales y azúcares), formando capas de hidratación a su alrededor."},
+    {cat:"Agua", q:"¿Qué es una sustancia hidrofílica y una hidrofóbica?", a:"Hidrofílica es una sustancia polar o cargada que se disuelve bien en agua (afinidad por el agua). Hidrofóbica es una sustancia apolar (como los lípidos) que no se disuelve y tiende a repeler el agua."},
+    {cat:"Agua", q:"¿Qué es la ionización del agua?", a:"Es la disociación espontánea de una pequeña fracción de moléculas de agua en un ion hidronio (H₃O⁺) y un ion hidroxilo (OH⁻), base de la escala de pH."},
+    {cat:"Agua", q:"¿Qué mide la escala de pH?", a:"La concentración de iones H⁺ en una disolución, en una escala de 0 a 14: valores menores a 7 son ácidos, igual a 7 es neutro y mayores a 7 son básicos o alcalinos."},
+    {cat:"Agua", q:"¿Qué es la ósmosis?", a:"El paso de agua a través de una membrana semipermeable desde una zona de menor concentración de solutos hacia una de mayor concentración, con el fin de igualar concentraciones."},
+    {cat:"Agua", q:"¿Qué diferencia hay entre una solución hipertónica, hipotónica e isotónica respecto a una célula?", a:"Hipertónica: mayor concentración de solutos fuera, la célula pierde agua y se encoge. Hipotónica: menor concentración fuera, la célula gana agua y puede estallar. Isotónica: concentraciones iguales, no hay flujo neto de agua."},
+    {cat:"Agua", q:"¿Qué proporción de agua tiene aproximadamente el cuerpo humano?", a:"Entre el 60% y el 70% de la masa corporal, variando según la edad, el sexo y el tipo de tejido (por ejemplo, el tejido muscular contiene más agua que el adiposo)."},
+    {cat:"Agua", q:"¿Cuáles son las principales funciones biológicas del agua?", a:"Actúa como disolvente universal, medio de transporte de sustancias, regulador térmico, reactivo en reacciones metabólicas (hidrólisis, fotosíntesis), lubricante y da forma y volumen a las células."},
+    {cat:"Agua", q:"¿Qué son las sales minerales y qué formas de presentación tienen?", a:"Compuestos inorgánicos que pueden encontrarse precipitadas (formando estructuras sólidas como huesos y conchas), disueltas en forma de iones (regulando el equilibrio osmótico y el pH) o asociadas a moléculas orgánicas."},
+    {cat:"Agua", q:"¿Qué es la tensión superficial?", a:"La resistencia que ofrece la superficie del agua a romperse, causada por la fuerte cohesión entre sus moléculas, que permite que algunos insectos caminen sobre el agua."}
+  ];
+
+  let order = CARDS.map((_, i) => i);
+  let idx = 0;
+  let known = new Set();
+  let currentCat = "Todos";
+
+  const cardEl = document.getElementById('card');
+  const frontText = document.getElementById('frontText');
+  const backText = document.getElementById('backText');
+  const tagFront = document.getElementById('tagFront');
+  const tagBack = document.getElementById('tagBack');
+  const counter = document.getElementById('counter');
+  const progressFill = document.getElementById('progressFill');
+  const progressLabel = document.getElementById('progressLabel');
+  const knownLabel = document.getElementById('knownLabel');
+  const filtersEl = document.getElementById('filters');
+
+  function buildFilters(){
+    const cats = ["Todos", ...new Set(CARDS.map(c => c.cat))];
+    filtersEl.innerHTML = '';
+    cats.forEach(cat => {
+      const btn = document.createElement('button');
+      btn.className = 'chip' + (cat === currentCat ? ' active' : '');
+      btn.textContent = cat;
+      btn.addEventListener('click', () => {
+        currentCat = cat;
+        rebuildOrder();
+        [...filtersEl.children].forEach(c => c.classList.remove('active'));
+        btn.classList.add('active');
+      });
+      filtersEl.appendChild(btn);
+    });
+  }
+
+  function rebuildOrder(){
+    order = CARDS
+      .map((c, i) => i)
+      .filter(i => currentCat === "Todos" || CARDS[i].cat === currentCat);
+    idx = 0;
+    render();
+  }
+
+  function shuffleOrder(){
+    for(let i = order.length - 1; i > 0; i--){
+      const j = Math.floor(Math.random() * (i + 1));
+      [order[i], order[j]] = [order[j], order[i]];
+    }
+    idx = 0;
+    render();
+  }
+
+  function render(){
+    cardEl.classList.remove('flipped');
+    const total = order.length;
+    if(total === 0){
+      frontText.textContent = "No hay tarjetas en esta categoría.";
+      backText.textContent = "";
+      counter.textContent = "";
+      progressLabel.textContent = "0 / 0";
+      progressFill.style.width = "0%";
+      return;
+    }
+    const cardIndex = order[idx];
+    const c = CARDS[cardIndex];
+    frontText.textContent = c.q;
+    backText.textContent = c.a;
+    tagFront.textContent = c.cat;
+    tagBack.textContent = c.cat;
+    counter.textContent = (idx + 1) + " / " + total;
+    progressLabel.textContent = (idx + 1) + " / " + total;
+    progressFill.style.width = ((idx + 1) / total * 100) + "%";
+    knownLabel.textContent = known.size + " dominadas";
+    document.getElementById('prevBtn').disabled = idx === 0;
+    document.getElementById('nextBtn').disabled = idx === total - 1;
+  }
+
+  function next(){
+    if(idx < order.length - 1){ idx++; render(); }
+  }
+  function prev(){
+    if(idx > 0){ idx--; render(); }
+  }
+
+  cardEl.addEventListener('click', () => cardEl.classList.toggle('flipped'));
+  document.getElementById('nextBtn').addEventListener('click', next);
+  document.getElementById('prevBtn').addEventListener('click', prev);
+  document.getElementById('shuffleBtn').addEventListener('click', shuffleOrder);
+
+  document.getElementById('btnKnown').addEventListener('click', () => {
+    known.add(order[idx]);
+    knownLabel.textContent = known.size + " dominadas";
+    next();
+  });
+  document.getElementById('btnReview').addEventListener('click', () => {
+    known.delete(order[idx]);
+    knownLabel.textContent = known.size + " dominadas";
+    next();
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if(e.key === 'ArrowRight') next();
+    else if(e.key === 'ArrowLeft') prev();
+    else if(e.key === ' '){ e.preventDefault(); cardEl.classList.toggle('flipped'); }
+  });
+
+  const themeToggle = document.getElementById('themeToggle');
+  themeToggle.addEventListener('click', () => {
+    document.body.classList.toggle('dark-mode');
+  });
+  (function initTheme(){
+    const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    document.body.classList.toggle('dark-mode', prefersDark);
+  })();
+
+  buildFilters();
+  rebuildOrder();
+</script>
+
+</body>
+</html>
